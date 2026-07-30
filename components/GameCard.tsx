@@ -5,7 +5,7 @@ import { PlayerAvatar } from "./PlayerAvatar";
 function TeamRoster({ team }: { team: Game["teamA"] }) {
   return (
     <div className="roster">
-      <div className="roster-title"><span className="color-dot" style={{ background: teamColors[team.color].hex }} />Time {team.name}</div>
+      <div className="roster-title"><span className="color-dot" style={{ background: teamColors[team.color].hex }} />Time {teamColors[team.color].label}</div>
       <div className="roster-list">
         {team.players.map(({ playerId, goals }) => {
           const player = playerById(playerId);
@@ -29,13 +29,13 @@ export function GameCard({ game, featured = false }: { game: Game; featured?: bo
       <div className="score-area">
         <div className="team-score">
           <span className="team-swatch" style={{ background: teamColors[game.teamA.color].hex }} />
-          <strong>Time {game.teamA.name}</strong>
+          <strong>Time {teamColors[game.teamA.color].label}</strong>
           <b>{game.teamA.score}</b>
         </div>
         <span className="score-divider">—</span>
         <div className="team-score team-score-away">
           <b>{game.teamB.score}</b>
-          <strong>Time {game.teamB.name}</strong>
+          <strong>Time {teamColors[game.teamB.color].label}</strong>
           <span className="team-swatch" style={{ background: teamColors[game.teamB.color].hex }} />
         </div>
       </div>

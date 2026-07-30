@@ -4,6 +4,7 @@ import { match20260715 } from "./2026-07-15";
 import { match20260717 } from "./2026-07-17";
 import { match20260722 } from "./2026-07-22";
 import { match20260728 } from "./2026-07-28";
+import { match20260730 } from "./2026-07-30";
 
 export const games: Game[] = [
   match20260713,
@@ -11,4 +12,5 @@ export const games: Game[] = [
   match20260717,
   match20260722,
   match20260728,
+  match20260730,
 ];
