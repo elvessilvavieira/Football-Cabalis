@@ -1,10 +1,27 @@
 import { games } from "@/src/data/match";
 import { players } from "@/src/data/team/players";
 import { teamColors } from "@/src/data/types";
-import type { GameTeam } from "@/src/data/types";
+import type { Game, GameTeam } from "@/src/data/types";
 
 export { games, players, teamColors };
 export type { Game, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/src/data/types";
+
+export type Standing = ReturnType<typeof getStandings>[number];
+
+export type Season = {
+  id: string;
+  label: string;
+  games: Game[];
+  standings: ReturnType<typeof getStandings>;
+};
+
+type PointsRule = {
+  win: number;
+  draw: number;
+  loss: number;
+};
+
+const officialPointsRule: PointsRule = { win: 3, draw: 1, loss: 0 };
 
 export function playerById(id: string) {
   return players.find((player) => player.id === id)!;
@@ -14,7 +31,7 @@ export function sortedGames() {
   return [...games].sort((a, b) => +new Date(b.date) - +new Date(a.date));
 }
 
-export function getStandings() {
+export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule = officialPointsRule) {
   const table = new Map(players.map((player) => [player.id, {
     player,
     points: 0,
@@ -23,10 +40,11 @@ export function getStandings() {
     goalsAgainst: 0,
     games: 0,
     wins: 0,
+    draws: 0,
     losses: 0,
   }]));
 
-  games.forEach((game) => {
+  seasonGames.forEach((game) => {
     const aResult = game.teamA.score > game.teamB.score ? 1 : game.teamA.score < game.teamB.score ? -1 : 0;
     const bResult = -aResult;
 
@@ -40,12 +58,13 @@ export function getStandings() {
 
       team.players.forEach(({ playerId, goals }) => {
         const row = table.get(playerId)!;
-        row.points += result;
+        row.points += result === 1 ? pointsRule.win : result === 0 ? pointsRule.draw : pointsRule.loss;
         row.goalsScored += goals;
         row.goalsFor += team.score;
         row.goalsAgainst += conceded;
         row.games += 1;
         if (result === 1) row.wins += 1;
+        if (result === 0) row.draws += 1;
         if (result === -1) row.losses += 1;
       });
     });
@@ -58,4 +77,37 @@ export function getStandings() {
     || a.goalsAgainst - b.goalsAgainst
     || a.player.name.localeCompare(b.player.name),
   );
+}
+
+export function getStatisticsStandings() {
+  return getStandings(games, { win: 1, draw: 0, loss: -1 });
+}
+
+function seasonId(date: string) {
+  return date.slice(0, 7);
+}
+
+export function getSeasons(): Season[] {
+  const grouped = games.reduce<Record<string, Game[]>>((seasons, game) => {
+    (seasons[seasonId(game.date)] ??= []).push(game);
+    return seasons;
+  }, {});
+
+  return Object.entries(grouped)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([id, seasonGames]) => ({
+      id,
+      label: new Intl.DateTimeFormat("pt-PT", { month: "long", year: "numeric", timeZone: "UTC" })
+        .format(new Date(`${id}-01T12:00:00Z`)),
+      games: [...seasonGames].sort((a, b) => +new Date(b.date) - +new Date(a.date)),
+      standings: getStandings(seasonGames),
+    }));
+}
+
+export function getSeason(id: string) {
+  return getSeasons().find((season) => season.id === id);
+}
+
+export function getCurrentSeason() {
+  return getSeasons()[0];
 }

@@ -110,6 +110,33 @@ tbody tr:hover { background: #fbfdfb; }
 .month-games .score-area { padding-block: 22px 14px; }
 .month-games .team-score b { width: 45px; height: 45px; font-size: 23px; }
 
+.seasons-grid { padding-block: 52px 84px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.season-card { overflow: hidden; background: white; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 14px 35px rgba(18,45,34,.07); transition: transform .2s, box-shadow .2s; }
+.season-card:hover { transform: translateY(-3px); box-shadow: 0 20px 45px rgba(18,45,34,.12); }
+.season-card-heading { padding: 20px 22px; display: flex; align-items: center; gap: 13px; border-bottom: 1px solid var(--line); }
+.season-card-heading > span:nth-child(2) { display: grid; text-transform: capitalize; }
+.season-card-heading small { color: var(--green-600); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.season-card-heading strong { margin-top: 3px; font-size: 19px; }
+.season-card-heading > svg { margin-left: auto; color: var(--green-600); }
+.season-icon { width: 42px; height: 42px; display: grid; place-items: center; color: var(--green-800); background: #e8f2ec; border-radius: 10px; }
+.champion { margin: 18px; padding: 18px; display: flex; align-items: center; gap: 12px; color: white; background: linear-gradient(120deg, var(--green-950), var(--green-800)); border-radius: 14px; }
+.champion > svg { color: var(--lime); }
+.champion > span:last-child { display: grid; }
+.champion small { color: var(--lime); font-size: 9px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.champion strong { margin-top: 2px; font-size: 17px; }
+.champion em { margin-top: 2px; color: #c5d7ce; font-size: 11px; font-style: normal; }
+.podium-list { padding: 0 20px 12px; display: grid; gap: 7px; }
+.podium-list > div { padding: 8px 0; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid #edf1ee; }
+.podium-list strong { font-size: 13px; }
+.podium-list small { color: var(--muted); font-size: 10px; }
+.podium-list b { margin-left: auto; color: var(--green-800); font-size: 12px; }
+.season-card > p { margin: 0; padding: 12px 20px; color: var(--muted); background: #f7f9f7; font-size: 11px; }
+.back-link { margin-bottom: 28px; display: flex; align-items: center; gap: 6px; color: #c5d7ce; font-size: 12px; font-weight: 700; }
+.back-link:hover { color: var(--lime); }
+.season-detail-hero h1 { text-transform: capitalize; }
+.season-games-section { padding-block: 64px 84px; background: #edf2ee; }
+.season-games { display: grid; gap: 20px; }
+
 footer { padding-block: 30px; color: #9eb1a8; background: #061f18; }
 .footer-inner { width: min(1120px, calc(100% - 40px)); margin: auto; display: flex; align-items: center; justify-content: space-between; }
 .footer-brand { transform: scale(.85); transform-origin: left; color: white; }
@@ -144,12 +171,15 @@ footer p { font-size: 11px; }
   .page-hero { padding-block: 52px; }
   .months-list { padding-block: 34px 60px; }
   .month-games { padding-inline: 10px; }
+  .seasons-grid { padding-block: 34px 60px; grid-template-columns: 1fr; }
+  .season-games-section { padding-block: 50px 60px; }
   .footer-inner { flex-direction: column; gap: 8px; text-align: center; }
 }
 
 @media (max-width: 430px) {
   .brand-mark { width: 32px; height: 32px; }
-  nav { gap: 12px; }
+  nav { gap: 8px; }
+  nav a { font-size: 10.5px; }
   .hero h1 { font-size: 39px; }
   .hero-stats { justify-content: space-between; gap: 12px; }
   .score-divider { font-size: 12px; }
