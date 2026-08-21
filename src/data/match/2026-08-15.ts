@@ -26,6 +26,7 @@ export const match20260815: Game = {
       { playerId: "angelo", goals: 4 },
       { playerId: "anderson", goals: 0 },
       { playerId: "alvino", goals: 0 },
+      { playerId: "ericles", goals: 0 },
     ],
   },
 };
