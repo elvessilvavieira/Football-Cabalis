@@ -6,13 +6,13 @@ export const match20260717: Game = {
   venue: "Campo Tech Park",
   teamA: {
     name: "A",
-    color: "verde",
+    color: "azul",
     score: 9,
     players: ["vady", "adilson", "lenilson"].map((playerId) => ({ playerId, goals: 0 })),
   },
   teamB: {
     name: "B",
-    color: "azul",
+    color: "verde",
     score: 6,
     players: ["helder", "paulo", "angelo"].map((playerId) => ({ playerId, goals: 0 })),
   },

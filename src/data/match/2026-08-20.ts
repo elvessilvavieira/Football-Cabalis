@@ -6,7 +6,7 @@ export const match20260820: Game = {
   venue: "Campo Tech Park",
   teamA: {
     name: "A",
-    color: "verde",
+    color: "azul",
     score: 18,
     players: [
       { playerId: "liliano", goals: 0 },
@@ -18,7 +18,7 @@ export const match20260820: Game = {
   },
   teamB: {
     name: "B",
-    color: "azul",
+    color: "verde",
     score: 13,
     players: [
       { playerId: "elves", goals: 1 },

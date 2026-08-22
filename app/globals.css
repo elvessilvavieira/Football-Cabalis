@@ -66,6 +66,13 @@ tbody tr:hover { background: #fbfdfb; }
 .points { display: inline-block; min-width: 34px; padding: 4px 7px; text-align: center; border-radius: 6px; color: #5d6963; background: #eef1ef; font-weight: 850; }
 .points.positive { color: #087b42; background: #dff5e9; }.points.negative { color: #bd3838; background: #fde8e8; }
 .table-note { margin: 0; padding: 11px 18px; color: #89948f; background: #fbfcfb; border-top: 1px solid var(--line); font-size: 11px; }
+.team-standings-heading { margin: 52px 0 24px; }
+.team-standings-heading h2 { margin: 6px 0 0; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.04em; }
+.team-standing-cell { min-width: 150px; display: flex; align-items: center; gap: 11px; }
+.team-standing-cell strong { color: var(--ink); font-size: 13px; }
+.team-standing-swatch { width: 28px; height: 28px; flex: 0 0 auto; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 1px #d8e1dc; }
+.scorers-table table { min-width: 480px; }
+.goals-total { color: var(--green-800); font-size: 16px; }
 
 .latest-section { padding-block: 72px 84px; color: white; background: var(--green-950); }
 .section-heading.light h2 { color: white; }
