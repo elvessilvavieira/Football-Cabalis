@@ -137,6 +137,21 @@ tbody tr:hover { background: #fbfdfb; }
 .podium-list strong { font-size: 13px; }
 .podium-list small { color: var(--muted); font-size: 10px; }
 .podium-list b { margin-left: auto; color: var(--green-800); font-size: 12px; }
+.season-awards { margin: 6px 18px 18px; display: grid; gap: 9px; }
+.season-award { min-height: 72px; padding: 12px 14px; display: flex; align-items: center; gap: 13px; border: 1px solid var(--line); border-radius: 12px; }
+.season-award-team { background: #f2f7f4; }
+.season-award-scorer { background: #fffbec; border-color: #eee3b9; }
+.season-award-icon { width: 46px; height: 46px; flex: 0 0 auto; display: grid; place-items: center; color: white; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.1); }
+.season-award-copy { min-width: 0; display: grid; }
+.season-award-copy small { color: var(--green-600); font-size: 9px; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
+.season-award-scorer .season-award-copy small { color: #9b7500; }
+.season-award-copy strong { margin-top: 4px; overflow: hidden; color: var(--ink); font-size: 16px; white-space: nowrap; text-overflow: ellipsis; }
+.season-award-value { min-width: 48px; margin-left: auto; display: grid; justify-items: end; }
+.season-award-value b { color: var(--green-800); font-size: 22px; line-height: 1; }
+.season-award-value small { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.season-award-scorer .season-award-value b { color: #9b7500; }
+.scorer-award-avatar { flex: 0 0 auto; position: relative; }
+.scorer-award-avatar i { width: 20px; height: 20px; display: grid; place-items: center; position: absolute; right: -5px; bottom: -3px; color: white; background: #b88b00; border: 2px solid #fffbec; border-radius: 50%; font-style: normal; }
 .season-card > p { margin: 0; padding: 12px 20px; color: var(--muted); background: #f7f9f7; font-size: 11px; }
 .back-link { margin-bottom: 28px; display: flex; align-items: center; gap: 6px; color: #c5d7ce; font-size: 12px; font-weight: 700; }
 .back-link:hover { color: var(--lime); }
