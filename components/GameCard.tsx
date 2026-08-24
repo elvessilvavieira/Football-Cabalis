@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin } from "lucide-react";
+import Link from "next/link";
 import { Game, playerById, teamColors } from "@/lib/data";
 import { PlayerAvatar } from "./PlayerAvatar";
 
@@ -10,11 +11,11 @@ function TeamRoster({ team }: { team: Game["teamA"] }) {
         {team.players.map(({ playerId, goals }) => {
           const player = playerById(playerId);
           return (
-            <div className="roster-player" key={playerId}>
+            <Link className="roster-player player-link" href={`/jogador/${playerId}`} key={playerId}>
               <PlayerAvatar player={player} size="sm" />
               <span>{player.name}</span>
               {goals > 0 && <em>{goals} {goals === 1 ? "golo" : "golos"}</em>}
-            </div>
+            </Link>
           );
         })}
       </div>

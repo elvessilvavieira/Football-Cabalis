@@ -8,6 +8,7 @@ export type { Game, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/
 
 export type Standing = ReturnType<typeof getStandings>[number];
 export type TeamStanding = ReturnType<typeof getTeamStandings>[number];
+export type PlayerProfile = ReturnType<typeof getPlayerProfile>;
 
 export type Season = {
   id: string;
@@ -178,4 +179,87 @@ export function getSeason(id: string) {
 
 export function getCurrentSeason() {
   return getSeasons()[0];
+}
+
+export function getPlayerProfile(id: string) {
+  const player = players.find((candidate) => candidate.id === id);
+  if (!player) return undefined;
+
+  const allStandings = getStandings(games);
+  const standing = allStandings.find((row) => row.player.id === id)!;
+  const overallPosition = allStandings.findIndex((row) => row.player.id === id) + 1;
+  const appearances = sortedGames().flatMap((game) => {
+    const sides = [
+      { team: game.teamA, opponent: game.teamB },
+      { team: game.teamB, opponent: game.teamA },
+    ];
+    const side = sides.find(({ team }) => team.players.some(({ playerId }) => playerId === id));
+    if (!side) return [];
+    const gamePlayer = side.team.players.find(({ playerId }) => playerId === id)!;
+    const result: "win" | "draw" | "loss" = side.team.score > side.opponent.score ? "win" : side.team.score < side.opponent.score ? "loss" : "draw";
+    return [{
+      game,
+      color: side.team.color,
+      colorLabel: teamColors[side.team.color].label,
+      colorHex: teamColors[side.team.color].hex,
+      opponentColor: side.opponent.color,
+      opponentLabel: teamColors[side.opponent.color].label,
+      opponentHex: teamColors[side.opponent.color].hex,
+      scoreFor: side.team.score,
+      scoreAgainst: side.opponent.score,
+      goals: gamePlayer.goals,
+      result,
+    }];
+  });
+
+  let longestWinStreak = 0;
+  let currentWinStreak = 0;
+  [...appearances].reverse().forEach(({ result }) => {
+    currentWinStreak = result === "win" ? currentWinStreak + 1 : 0;
+    longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
+  });
+
+  const colorCounts = new Map<keyof typeof teamColors, number>();
+  appearances.forEach(({ color }) => colorCounts.set(color, (colorCounts.get(color) ?? 0) + 1));
+  const favoriteColorEntry = [...colorCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  const favoriteColor = favoriteColorEntry ? {
+    color: favoriteColorEntry[0],
+    label: teamColors[favoriteColorEntry[0]].label,
+    hex: teamColors[favoriteColorEntry[0]].hex,
+    games: favoriteColorEntry[1],
+  } : undefined;
+
+  const seasons = getSeasons().flatMap((season) => {
+    const row = season.standings.find((candidate) => candidate.player.id === id)!;
+    if (row.games === 0) return [];
+    const position = season.standings.findIndex((candidate) => candidate.player.id === id) + 1;
+    const bestGoals = Math.max(...season.standings.map((candidate) => candidate.goalsScored));
+    const topScorer = row.goalsScored > 0 && row.goalsScored === bestGoals;
+    const honors = [
+      position === 1 ? "Campeão" : position === 2 ? "Vice-campeão" : position === 3 ? "3.º lugar" : undefined,
+      topScorer ? "Melhor marcador" : undefined,
+    ].filter((honor): honor is string => Boolean(honor));
+    return [{ id: season.id, label: season.label, position, topScorer, honors, ...row }];
+  });
+
+  const honors = seasons.flatMap((season) => season.honors.map((title) => ({
+    seasonId: season.id,
+    seasonLabel: season.label,
+    title,
+  })));
+  const bestScoringGame = [...appearances].sort((a, b) => b.goals - a.goals || +new Date(b.game.date) - +new Date(a.game.date))[0];
+
+  return {
+    player,
+    standing,
+    overallPosition,
+    appearances,
+    seasons,
+    honors,
+    favoriteColor,
+    bestScoringGame,
+    longestWinStreak,
+    winRate: standing.games ? (standing.wins / standing.games) * 100 : 0,
+    goalsPerGame: standing.games ? standing.goalsScored / standing.games : 0,
+  };
 }

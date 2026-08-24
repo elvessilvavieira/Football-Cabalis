@@ -1,6 +1,7 @@
 "use client";
 
 import { Medal } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Standing } from "@/lib/data";
 import { PlayerAvatar } from "./PlayerAvatar";
@@ -44,7 +45,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
               return (
               <tr key={row.player.id}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
-                <td><div className="player-cell"><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></div></td>
+                <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></Link></td>
                 <td><strong className="goals-total">{row.goalsScored}</strong></td>
               </tr>
               );
