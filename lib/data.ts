@@ -40,6 +40,7 @@ export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule
     goalsScored: 0,
     goalsFor: 0,
     goalsAgainst: 0,
+    goalDifference: 0,
     games: 0,
     wins: 0,
     draws: 0,
@@ -64,6 +65,7 @@ export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule
         row.goalsScored += goals;
         row.goalsFor += team.score;
         row.goalsAgainst += conceded;
+        row.goalDifference = row.goalsFor - row.goalsAgainst;
         row.games += 1;
         if (result === 1) row.wins += 1;
         if (result === 0) row.draws += 1;
@@ -74,9 +76,8 @@ export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule
 
   return [...table.values()].sort((a, b) =>
     b.points - a.points
+    || b.goalDifference - a.goalDifference
     || b.goalsScored - a.goalsScored
-    || b.goalsFor - a.goalsFor
-    || a.goalsAgainst - b.goalsAgainst
     || a.player.name.localeCompare(b.player.name),
   );
 }
