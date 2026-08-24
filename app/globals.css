@@ -174,6 +174,9 @@ tbody tr:hover { background: #fbfdfb; }
 .profile-photo { width: 100%; height: 100%; display: grid; place-items: center; object-fit: cover; border: 5px solid rgba(255,255,255,.92); border-radius: 50%; box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 0 8px rgba(198,243,75,.14); }
 .profile-photo-fallback { color: var(--green-950); background: #dceae2; font-size: 56px; font-weight: 900; }
 .profile-rank { position: absolute; right: 2px; bottom: 12px; padding: 8px 11px; display: flex; align-items: center; gap: 5px; color: var(--green-950); background: var(--lime); border: 3px solid var(--green-950); border-radius: 999px; font-size: 13px; font-weight: 900; }
+.profile-rank::after { content: attr(data-tooltip); width: max-content; max-width: 230px; padding: 8px 10px; position: absolute; right: -3px; bottom: calc(100% + 9px); z-index: 3; color: white; background: #061f18; border: 1px solid rgba(255,255,255,.14); border-radius: 7px; box-shadow: 0 8px 24px rgba(0,0,0,.24); font-size: 10px; font-weight: 650; line-height: 1.35; text-align: center; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity .16s, transform .16s; }
+.profile-rank:hover::after, .profile-rank:focus-visible::after { opacity: 1; transform: translateY(0); }
+.profile-rank:focus-visible { outline: 2px solid white; outline-offset: 2px; }
 .player-hero-copy h1 { margin: 12px 0; font-size: clamp(45px, 6vw, 70px); line-height: .98; letter-spacing: -.055em; }
 .player-hero-copy > p { margin: 0; color: #c9d9d2; font-size: 15px; }
 .profile-badges { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 9px; }
@@ -214,6 +217,9 @@ tbody tr:hover { background: #fbfdfb; }
 .season-performance-head > span { display: grid; text-transform: capitalize; }
 .season-performance-head small { color: #8a9690; font-size: 9px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .season-performance-head strong { margin-top: 3px; color: var(--ink); font-size: 17px; }
+.season-primary-team { margin-top: 7px; display: flex; align-items: center; gap: 5px; color: #65736c; font-size: 10px; font-style: normal; font-weight: 700; text-transform: none; }
+.season-primary-team i { width: 8px; height: 8px; display: inline-block; border-radius: 50%; }
+.season-primary-team b { color: #a3ada8; font-weight: 500; }
 .season-position { min-width: 40px; padding: 7px; text-align: center; color: var(--green-800); background: #e8f4ed; border-radius: 9px; }
 .season-position-1 { color: #8e6900; background: #fff1b8; }.season-position-2 { color: #66736d; background: #e9eeeb; }.season-position-3 { color: #9b5c2e; background: #f7e4d6; }
 .season-performance-stats { margin-top: 18px; padding-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid #edf1ee; }

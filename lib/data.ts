@@ -235,11 +235,34 @@ export function getPlayerProfile(id: string) {
     const position = season.standings.findIndex((candidate) => candidate.player.id === id) + 1;
     const bestGoals = Math.max(...season.standings.map((candidate) => candidate.goalsScored));
     const topScorer = row.goalsScored > 0 && row.goalsScored === bestGoals;
+    const seasonAppearances = appearances.filter(({ game }) => seasonId(game.date) === season.id);
+    const teamAppearances = seasonAppearances.reduce((counts, appearance) => {
+      counts.set(appearance.color, (counts.get(appearance.color) ?? 0) + 1);
+      return counts;
+    }, new Map<keyof typeof teamColors, number>());
+    const primaryTeamEntry = [...teamAppearances.entries()].sort(([colorA, gamesA], [colorB, gamesB]) => {
+      if (gamesA !== gamesB) return gamesB - gamesA;
+      const positionA = season.teamStandings.findIndex((team) => team.color === colorA);
+      const positionB = season.teamStandings.findIndex((team) => team.color === colorB);
+      return positionA - positionB;
+    })[0];
+    const primaryTeamStanding = primaryTeamEntry
+      ? season.teamStandings.find((team) => team.color === primaryTeamEntry[0])
+      : undefined;
+    const primaryTeam = primaryTeamEntry && primaryTeamStanding ? {
+      color: primaryTeamEntry[0],
+      label: teamColors[primaryTeamEntry[0]].label,
+      hex: teamColors[primaryTeamEntry[0]].hex,
+      games: primaryTeamEntry[1],
+      position: season.teamStandings.findIndex((team) => team.color === primaryTeamEntry[0]) + 1,
+      champion: season.teamStandings[0]?.color === primaryTeamEntry[0],
+    } : undefined;
     const honors = [
       position === 1 ? "Campeão" : position === 2 ? "Vice-campeão" : position === 3 ? "3.º lugar" : undefined,
       topScorer ? "Melhor marcador" : undefined,
+      primaryTeam?.champion ? `Campeão pelo Time ${primaryTeam.label}` : undefined,
     ].filter((honor): honor is string => Boolean(honor));
-    return [{ id: season.id, label: season.label, position, topScorer, honors, ...row }];
+    return [{ id: season.id, label: season.label, position, topScorer, primaryTeam, honors, ...row }];
   });
 
   const honors = seasons.flatMap((season) => season.honors.map((title) => ({
@@ -248,6 +271,8 @@ export function getPlayerProfile(id: string) {
     title,
   })));
   const bestScoringGame = [...appearances].sort((a, b) => b.goals - a.goals || +new Date(b.game.date) - +new Date(a.game.date))[0];
+  const currentSeasonId = getCurrentSeason()?.id;
+  const currentSeason = seasons.find((season) => season.id === currentSeasonId);
 
   return {
     player,
@@ -256,6 +281,7 @@ export function getPlayerProfile(id: string) {
     appearances,
     seasons,
     honors,
+    currentSeason,
     favoriteColor,
     bestScoringGame,
     longestWinStreak,

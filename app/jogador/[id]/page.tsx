@@ -26,6 +26,7 @@ function formatDate(date: string, long = false) {
 function honorIcon(title: string) {
   if (title === "Campeão") return <Crown size={20} />;
   if (title === "Melhor marcador") return <Target size={20} />;
+  if (title.startsWith("Campeão pelo Time")) return <Trophy size={20} />;
   return <Medal size={20} />;
 }
 
@@ -47,7 +48,11 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
             {player.photo
               ? <img className="profile-photo" src={player.photo} alt={player.name} />
               : <span className="profile-photo profile-photo-fallback">{player.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span>}
-            <span className="profile-rank"><Trophy size={16} /> #{profile.overallPosition}</span>
+            <span
+              className="profile-rank"
+              data-tooltip={profile.currentSeason ? `Posição na temporada atual: ${profile.currentSeason.label}` : "Sem jogos na temporada atual"}
+              tabIndex={0}
+            ><Trophy size={16} /> {profile.currentSeason ? `#${profile.currentSeason.position}` : "—"}</span>
           </div>
           <div className="player-hero-copy">
             <span className="eyebrow"><span /> PERFIL DO JOGADOR</span>
@@ -82,14 +87,14 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
 
       <div className="profile-section-heading"><div><span className="section-kicker"><CalendarDays size={15} /> EVOLUÇÃO</span><h2>Estatísticas por temporada</h2></div></div>
       {profile.seasons.length > 0 ? <div className="season-performance-grid">{profile.seasons.map((season) => <Link className="season-performance-card" href={`/temporadas/${season.id}`} key={season.id}>
-        <div className="season-performance-head"><span><small>Temporada</small><strong>{season.label}</strong></span><b className={`season-position season-position-${season.position}`}>#{season.position}</b></div>
+        <div className="season-performance-head"><span><small>Temporada</small><strong>{season.label}</strong>{season.primaryTeam && <em className="season-primary-team"><i style={{ backgroundColor: season.primaryTeam.hex }} />Time {season.primaryTeam.label} <b>|</b> {season.primaryTeam.position}.º lugar</em>}</span><b className={`season-position season-position-${season.position}`}>#{season.position}</b></div>
         <div className="season-performance-stats"><span><b>{season.games}</b><small>Jogos</small></span><span><b>{season.wins}</b><small>Vitórias</small></span><span><b>{season.points}</b><small>Pontos</small></span><span><b>{season.goalsScored}</b><small>Golos</small></span><span><b>{season.goalDifference > 0 ? `+${season.goalDifference}` : season.goalDifference}</b><small>Saldo</small></span></div>
         {season.honors.length > 0 && <div className="season-honor-tags">{season.honors.map((honor) => <em key={honor}>{honorIcon(honor)} {honor}</em>)}</div>}
       </Link>)}</div> : <div className="profile-empty"><CalendarDays size={25} /><span><strong>Sem temporadas disputadas</strong><small>As estatísticas surgirão depois do primeiro jogo.</small></span></div>}
 
       <div className="profile-lower-grid">
         <section>
-          <div className="profile-section-heading compact"><div><span className="section-kicker"><Target size={15} /> DESTAQUE</span><h2>Melhor atuação</h2></div></div>
+          <div className="profile-section-heading compact"><div><span className="section-kicker"><Target size={15} /> MAIS GOLOS NUM JOGO</span><h2>Melhor atuação</h2></div></div>
           {profile.bestScoringGame ? <Link className="best-game-card" href={`/temporadas/${profile.bestScoringGame.game.date.slice(0, 7)}`}>
             <div><span className="team-standing-swatch" style={{ backgroundColor: profile.bestScoringGame.colorHex }} /><small>Time {profile.bestScoringGame.colorLabel}</small><strong>{profile.bestScoringGame.scoreFor}–{profile.bestScoringGame.scoreAgainst}</strong><small>Time {profile.bestScoringGame.opponentLabel}</small><span className="team-standing-swatch" style={{ backgroundColor: profile.bestScoringGame.opponentHex }} /></div>
             <p><b>{profile.bestScoringGame.goals}</b><span>{profile.bestScoringGame.goals === 1 ? "golo marcado" : "golos marcados"}<small>{formatDate(profile.bestScoringGame.game.date, true)}</small></span></p>
