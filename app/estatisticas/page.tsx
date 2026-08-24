@@ -7,7 +7,7 @@ import { games, getSeasons, getStatisticsStandings, getStatisticsTeamStandings }
 
 export const metadata: Metadata = {
   title: "Estatísticas | Cabalis Futebol",
-  description: "Classificação histórica de todos os jogos e temporadas do Cabalis Futebol.",
+  description: "Ranking histórico de jogadores de todos os jogos e temporadas do Cabalis Futebol.",
 };
 
 export default function StatisticsPage() {
@@ -22,11 +22,11 @@ export default function StatisticsPage() {
     <section className="page-hero"><div className="container">
       <span className="eyebrow"><span /> HISTÓRICO COMPLETO</span>
       <h1>Estatísticas</h1>
-      <p>{games.length} jogos de {seasons.length} {seasons.length === 1 ? "temporada" : "temporadas"} reunidos numa única classificação.</p>
+      <p>{games.length} jogos de {seasons.length} {seasons.length === 1 ? "temporada" : "temporadas"} reunidos num único ranking.</p>
     </div></section>
     <section className="container content-section standings-section">
       <div className="section-heading">
-        <div><span className="section-kicker"><BarChart3 size={15} /> TODAS AS TEMPORADAS</span><h2>Classificação histórica</h2></div>
+        <div><span className="section-kicker"><BarChart3 size={15} /> TODAS AS TEMPORADAS</span><h2>Ranking histórico de jogadores</h2></div>
         <p>Vitória <b>+1 pt</b> · Empate <b>0 pt</b> · Derrota <b>−1 pt</b></p>
       </div>
       <StandingsTable standings={standings} />

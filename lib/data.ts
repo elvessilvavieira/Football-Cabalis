@@ -258,7 +258,7 @@ export function getPlayerProfile(id: string) {
       champion: season.teamStandings[0]?.color === primaryTeamEntry[0],
     } : undefined;
     const honors = [
-      position === 1 ? "Campeão" : position === 2 ? "Vice-campeão" : position === 3 ? "3.º lugar" : undefined,
+      position === 1 ? "Melhor jogador" : position === 2 ? "Segundo melhor jogador" : position === 3 ? "Terceiro melhor jogador" : undefined,
       topScorer ? "Melhor marcador" : undefined,
       primaryTeam?.champion ? `Campeão pelo Time ${primaryTeam.label}` : undefined,
     ].filter((honor): honor is string => Boolean(honor));

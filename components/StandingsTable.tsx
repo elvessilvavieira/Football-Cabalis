@@ -48,7 +48,7 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
       <div className="table-scroll">
         <table>
           <thead><tr>
-            <SortableHeader active={!sort} direction="asc" onClick={() => setSort(null)} title="Restaurar classificação oficial">#</SortableHeader>
+            <SortableHeader active={!sort} direction="asc" onClick={() => setSort(null)} title="Restaurar ranking oficial">#</SortableHeader>
             {columns.map((column) => <SortableHeader key={column.key} active={sort?.key === column.key} direction={sort?.key === column.key ? sort.direction : undefined} onClick={() => changeSort(column.key)}>{column.label}</SortableHeader>)}
           </tr></thead>
           <tbody>

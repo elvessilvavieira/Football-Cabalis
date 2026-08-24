@@ -35,7 +35,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
       <div className="table-scroll">
         <table>
           <thead><tr>
-            <SortableHeader active={!sort} direction="asc" onClick={() => setSort(null)} title="Restaurar classificação oficial">#</SortableHeader>
+            <SortableHeader active={!sort} direction="asc" onClick={() => setSort(null)} title="Restaurar ranking oficial">#</SortableHeader>
             <SortableHeader active={sort?.key === "player"} direction={sort?.key === "player" ? sort.direction : undefined} onClick={() => changeSort("player")}>Jogador</SortableHeader>
             <SortableHeader active={sort?.key === "goalsScored"} direction={sort?.key === "goalsScored" ? sort.direction : undefined} onClick={() => changeSort("goalsScored")}>Golos</SortableHeader>
           </tr></thead>

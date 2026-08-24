@@ -19,11 +19,11 @@ export default function Home() {
     .sort((a, b) => b.goalsScored - a.goalsScored || a.player.name.localeCompare(b.player.name));
   return <main>
     <section className="hero"><div className="hero-pattern" /><div className="container hero-content">
-      <h1>O jogo acaba.<br /><em>A história fica.</em></h1><p>Resultados, golos e a classificação oficial da nossa pelada.</p>
+      <h1>O jogo acaba.<br /><em>A história fica.</em></h1><p>Resultados, golos e o ranking oficial da nossa pelada.</p>
       <div className="hero-stats"><div><strong>{games.length}</strong><span>partidas</span></div><div><strong>{totalGoals}</strong><span>golos</span></div><div><strong>{totalPlayers}</strong><span>jogadores</span></div></div>
     </div></section>
     <section className="container content-section standings-section">
-      <div className="section-heading"><div><span className="section-kicker"><TrendingUp size={15} /> TEMPORADA ATUAL</span><h2>Classificação de {season.label}</h2></div><p>Vitória <b>3 pts</b> · Empate <b>1 pt</b> · Derrota <b>0 pt</b></p></div>
+      <div className="section-heading"><div><span className="section-kicker"><TrendingUp size={15} /> TEMPORADA ATUAL</span><h2>Ranking de jogadores de {season.label}</h2></div><p>Vitória <b>3 pts</b> · Empate <b>1 pt</b> · Derrota <b>0 pt</b></p></div>
       <StandingsTable standings={season.standings} />
       <div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> TIMES</span><h2>Classificação de times de {season.label}</h2></div>
       <TeamStandingsTable standings={season.teamStandings} />

@@ -24,7 +24,7 @@ function formatDate(date: string, long = false) {
 }
 
 function honorIcon(title: string) {
-  if (title === "Campeão") return <Crown size={20} />;
+  if (title === "Melhor jogador") return <Crown size={20} />;
   if (title === "Melhor marcador") return <Target size={20} />;
   if (title.startsWith("Campeão pelo Time")) return <Trophy size={20} />;
   return <Medal size={20} />;
@@ -61,7 +61,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
               ? `${standing.games} ${standing.games === 1 ? "jogo disputado" : "jogos disputados"}${firstGame ? ` desde ${formatDate(firstGame.game.date, true)}` : ""}.`
               : "Ainda sem jogos registados."}</p>
             <div className="profile-badges">
-              <span><TrendingUp size={15} /> #{profile.overallPosition} na classificação geral</span>
+              <span><TrendingUp size={15} /> #{profile.overallPosition} no ranking geral</span>
               {profile.favoriteColor && <span><i style={{ backgroundColor: profile.favoriteColor.hex }} /> Mais vezes no Time {profile.favoriteColor.label}</span>}
             </div>
             {recentForm.length > 0 && <div className="profile-form"><small>Últimos jogos</small><div>{recentForm.map((appearance) => <span className={`form-dot form-${appearance.result}`} title={resultLabel[appearance.result]} key={appearance.game.id}>{appearance.result === "win" ? "V" : appearance.result === "draw" ? "E" : "D"}</span>)}</div></div>}
