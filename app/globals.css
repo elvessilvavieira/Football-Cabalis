@@ -202,12 +202,13 @@ tbody tr:hover { background: #fbfdfb; }
 .profile-section-heading.compact { margin-top: 0; }
 .profile-section-heading.compact h2 { font-size: 28px; }
 .honors-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.honor-card { min-height: 100px; padding: 18px; display: flex; align-items: center; gap: 15px; background: linear-gradient(135deg, #fffdf3, white); border: 1px solid #eadfb8; border-radius: 15px; transition: transform .18s, box-shadow .18s; }
+.honor-card { position: relative; min-height: 100px; padding: 18px; display: flex; align-items: center; gap: 15px; background: linear-gradient(135deg, #fffdf3, white); border: 1px solid #eadfb8; border-radius: 15px; transition: transform .18s, box-shadow .18s; }
 .honor-card:hover, .season-performance-card:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(20,49,38,.09); }
 .honor-icon { width: 45px; height: 45px; flex: 0 0 auto; display: grid; place-items: center; color: #a87800; background: #fff1b8; border-radius: 50%; }
 .honor-card > span:last-child { display: grid; text-transform: capitalize; }
 .honor-card small { color: #897f61; font-size: 10px; }
 .honor-card strong { margin-top: 3px; color: #4c3b0c; font-size: 15px; }
+.honor-ongoing { position: absolute; top: 8px; right: 10px; color: #94845b; font-size: 8px; font-style: normal; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .profile-empty { min-height: 96px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 13px; color: #93a099; background: white; border: 1px dashed #ccd8d1; border-radius: 15px; }
 .profile-empty > span { display: grid; }.profile-empty strong { color: #5e6c65; font-size: 13px; }.profile-empty small { margin-top: 3px; font-size: 10px; }
 .profile-empty.small { min-height: 100px; }

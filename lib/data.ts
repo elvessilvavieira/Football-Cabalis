@@ -186,8 +186,9 @@ export function getPlayerProfile(id: string) {
   if (!player) return undefined;
 
   const allStandings = getStandings(games);
+  const statisticsStandings = getStatisticsStandings();
   const standing = allStandings.find((row) => row.player.id === id)!;
-  const overallPosition = allStandings.findIndex((row) => row.player.id === id) + 1;
+  const statisticsPosition = statisticsStandings.findIndex((row) => row.player.id === id) + 1;
   const appearances = sortedGames().flatMap((game) => {
     const sides = [
       { team: game.teamA, opponent: game.teamB },
@@ -265,19 +266,32 @@ export function getPlayerProfile(id: string) {
     return [{ id: season.id, label: season.label, position, topScorer, primaryTeam, honors, ...row }];
   });
 
-  const honors = seasons.flatMap((season) => season.honors.map((title) => ({
+  const currentSeasonId = getCurrentSeason()?.id;
+  const statisticsHonor = statisticsPosition <= 3 ? [{
+    seasonId: "general",
+    seasonLabel: "Geral",
+    title: statisticsPosition === 1
+      ? "Ouro das Estatísticas"
+      : statisticsPosition === 2
+        ? "Prata das Estatísticas"
+        : "Bronze das Estatísticas",
+    href: "/estatisticas",
+    ongoing: false,
+  }] : [];
+  const honors = [...statisticsHonor, ...seasons.flatMap((season) => season.honors.map((title) => ({
     seasonId: season.id,
     seasonLabel: season.label,
     title,
-  })));
+    href: `/temporadas/${season.id}`,
+    ongoing: season.id === currentSeasonId,
+  })))];
   const bestScoringGame = [...appearances].sort((a, b) => b.goals - a.goals || +new Date(b.game.date) - +new Date(a.game.date))[0];
-  const currentSeasonId = getCurrentSeason()?.id;
   const currentSeason = seasons.find((season) => season.id === currentSeasonId);
 
   return {
     player,
     standing,
-    overallPosition,
+    statisticsPosition,
     appearances,
     seasons,
     honors,

@@ -61,7 +61,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
               ? `${standing.games} ${standing.games === 1 ? "jogo disputado" : "jogos disputados"}${firstGame ? ` desde ${formatDate(firstGame.game.date, true)}` : ""}.`
               : "Ainda sem jogos registados."}</p>
             <div className="profile-badges">
-              <span><TrendingUp size={15} /> #{profile.overallPosition} no ranking geral</span>
+              <span><TrendingUp size={15} /> #{profile.statisticsPosition} na estatística geral</span>
               {profile.favoriteColor && <span><i style={{ backgroundColor: profile.favoriteColor.hex }} /> Mais vezes no Time {profile.favoriteColor.label}</span>}
             </div>
             {recentForm.length > 0 && <div className="profile-form"><small>Últimos jogos</small><div>{recentForm.map((appearance) => <span className={`form-dot form-${appearance.result}`} title={resultLabel[appearance.result]} key={appearance.game.id}>{appearance.result === "win" ? "V" : appearance.result === "draw" ? "E" : "D"}</span>)}</div></div>}
@@ -80,8 +80,9 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         <article><span><Flame size={18} /></span><small>Maior sequência</small><strong>{profile.longestWinStreak}</strong><em>{profile.longestWinStreak === 1 ? "vitória seguida" : "vitórias seguidas"}</em></article>
       </div>
 
-      <div className="profile-section-heading"><div><span className="section-kicker"><Award size={15} /> PALMARÉS</span><h2>Conquistas por temporada</h2></div><p>{profile.honors.length} {profile.honors.length === 1 ? "distinção" : "distinções"}</p></div>
-      {profile.honors.length > 0 ? <div className="honors-grid">{profile.honors.map((honor) => <Link className={`honor-card honor-${honor.title.toLowerCase().replaceAll(" ", "-").normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`} href={`/temporadas/${honor.seasonId}`} key={`${honor.seasonId}-${honor.title}`}>
+      <div className="profile-section-heading"><div><span className="section-kicker"><Award size={15} /> PALMARÉS</span><h2>Conquistas</h2></div><p>{profile.honors.length} {profile.honors.length === 1 ? "distinção" : "distinções"}</p></div>
+      {profile.honors.length > 0 ? <div className="honors-grid">{profile.honors.map((honor) => <Link className={`honor-card honor-${honor.title.toLowerCase().replaceAll(" ", "-").normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`} href={honor.href} key={`${honor.seasonId}-${honor.title}`}>
+        {honor.ongoing && <em className="honor-ongoing">em andamento</em>}
         <span className="honor-icon">{honorIcon(honor.title)}</span><span><small>{honor.seasonLabel}</small><strong>{honor.title}</strong></span>
       </Link>)}</div> : <div className="profile-empty"><Award size={25} /><span><strong>À procura da primeira conquista</strong><small>Os pódios e prémios futuros aparecerão aqui.</small></span></div>}
 
