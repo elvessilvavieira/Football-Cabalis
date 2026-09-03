@@ -10,10 +10,10 @@ export const match20260902: Game = {
     score: 6,
     players: [
       { playerId: "helder", goals: 0 },
+      { playerId: "josue", goals: 0 },
+      { playerId: "angelo", goals: 1 },
       { playerId: "paulo", goals: 0 },
       { playerId: "dunha", goals: 0 },
-      { playerId: "josue", goals: 0 },
-      { playerId: "ericles", goals: 0 },
     ],
   },
   teamB: {
@@ -23,8 +23,8 @@ export const match20260902: Game = {
     players: [
       { playerId: "vady", goals: 0 },
       { playerId: "adilson", goals: 0 },
-      { playerId: "angelo", goals: 1 },
       { playerId: "victor", goals: 0 },
+      { playerId: "liliano", goals: 4 },
       { playerId: "detirson", goals: 0 },
     ],
   },

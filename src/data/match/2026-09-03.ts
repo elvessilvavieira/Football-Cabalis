@@ -21,7 +21,7 @@ export const match20260903: Game = {
     color: "azul",
     score: 7,
     players: [
-      { playerId: "liliano", goals: 0 },
+      { playerId: "liliano", goals: 4 },
       { playerId: "adilson", goals: 0 },
       { playerId: "dunha", goals: 0 },
       { playerId: "angelo", goals: 1 },
