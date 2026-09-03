@@ -19,4 +19,6 @@ export const players: Player[] = [
   { id: "edmilson", name: "Edmilson", photo: "/team/edmilson.png" },
   { id: "detirson", name: "Deritson Silva", photo: "/team/detirson.png" },
   { id: "ericles", name: "Érices Almeida", photo: "/team/ericles.png" },
+  { id: "josue", name: "Josué Miranda", photo: "/team/josue.png" },
+  { id: "victor", name: "Victor Rony", photo: "/team/victor.png" },
 ];
