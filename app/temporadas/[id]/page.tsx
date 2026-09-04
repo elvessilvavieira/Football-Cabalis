@@ -7,10 +7,13 @@ import { TeamStandingsTable } from "@/components/TeamStandingsTable";
 import { TopScorersTable } from "@/components/TopScorersTable";
 import { getSeason, getSeasons } from "@/lib/data";
 
-export function generateStaticParams() { return getSeasons().map(({ id }) => ({ id })); }
+export async function generateStaticParams() {
+  const seasons = await getSeasons();
+  return seasons.map(({ id }) => ({ id }));
+}
 
 export default async function TemporadaPage({ params }: { params: Promise<{ id: string }> }) {
-  const season = getSeason((await params).id);
+  const season = await getSeason((await params).id);
   if (!season) notFound();
   const topScorers = [...season.standings]
     .filter((row) => row.goalsScored > 0)
