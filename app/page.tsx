@@ -4,10 +4,10 @@ import { GameCard } from "@/components/GameCard";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamStandingsTable } from "@/components/TeamStandingsTable";
 import { TopScorersTable } from "@/components/TopScorersTable";
-import { games, getCurrentSeason } from "@/lib/data";
+import { getCurrentSeason, getGames } from "@/lib/data";
 
-export default function Home() {
-  const season = getCurrentSeason();
+export default async function Home() {
+  const [games, season] = await Promise.all([getGames(), getCurrentSeason()]);
   const lastGame = season.games[0];
   const totalGoals = games.reduce((sum, game) => sum + game.teamA.score + game.teamB.score, 0);
   const totalPlayers = new Set(games.flatMap((game) => [

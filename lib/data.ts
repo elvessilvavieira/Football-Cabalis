@@ -1,14 +1,13 @@
-import { games } from "@/src/data/match";
-import { players } from "@/src/data/team/players";
+import { getGames, getPlayers } from "@/lib/db";
 import { teamColors } from "@/src/data/types";
-import type { Game, GameTeam } from "@/src/data/types";
+import type { Game, GameTeam, Player } from "@/src/data/types";
 
-export { games, players, teamColors };
+export { getGames, getPlayers, teamColors };
 export type { Game, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/src/data/types";
 
 export type Standing = ReturnType<typeof getStandings>[number];
 export type TeamStanding = ReturnType<typeof getTeamStandings>[number];
-export type PlayerProfile = ReturnType<typeof getPlayerProfile>;
+export type PlayerProfile = Awaited<ReturnType<typeof getPlayerProfile>>;
 
 export type Season = {
   id: string;
@@ -25,17 +24,20 @@ type PointsRule = {
 };
 
 const officialPointsRule: PointsRule = { win: 3, draw: 1, loss: 0 };
+const statisticsPointsRule: PointsRule = { win: 1, draw: 0, loss: -1 };
 
-export function playerById(id: string) {
+export async function playerById(id: string) {
+  const players = await getPlayers();
   return players.find((player) => player.id === id)!;
 }
 
-export function sortedGames() {
+export async function sortedGames() {
+  const games = await getGames();
   return [...games].sort((a, b) => +new Date(b.date) - +new Date(a.date));
 }
 
-export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule = officialPointsRule) {
-  const table = new Map(players.map((player) => [player.id, {
+export function getStandings(seasonGames: Game[], allPlayers: Player[], pointsRule: PointsRule = officialPointsRule) {
+  const table = new Map(allPlayers.map((player) => [player.id, {
     player,
     points: 0,
     goalsScored: 0,
@@ -83,15 +85,17 @@ export function getStandings(seasonGames: Game[] = games, pointsRule: PointsRule
   );
 }
 
-export function getStatisticsStandings() {
-  return getStandings(games, { win: 1, draw: 0, loss: -1 });
+export async function getStatisticsStandings() {
+  const [games, players] = await Promise.all([getGames(), getPlayers()]);
+  return getStandings(games, players, statisticsPointsRule);
 }
 
-export function getStatisticsTeamStandings() {
-  return getTeamStandings(games, { win: 1, draw: 0, loss: -1 });
+export async function getStatisticsTeamStandings() {
+  const games = await getGames();
+  return getTeamStandings(games, statisticsPointsRule);
 }
 
-export function getTeamStandings(seasonGames: Game[] = games, pointsRule: PointsRule = officialPointsRule) {
+export function getTeamStandings(seasonGames: Game[], pointsRule: PointsRule = officialPointsRule) {
   const table = new Map<keyof typeof teamColors, {
     color: keyof typeof teamColors;
     label: string;
@@ -155,7 +159,8 @@ function seasonId(date: string) {
   return date.slice(0, 7);
 }
 
-export function getSeasons(): Season[] {
+export async function getSeasons(): Promise<Season[]> {
+  const [games, players] = await Promise.all([getGames(), getPlayers()]);
   const grouped = games.reduce<Record<string, Game[]>>((seasons, game) => {
     (seasons[seasonId(game.date)] ??= []).push(game);
     return seasons;
@@ -168,28 +173,32 @@ export function getSeasons(): Season[] {
       label: new Intl.DateTimeFormat("pt-PT", { month: "long", year: "numeric", timeZone: "UTC" })
         .format(new Date(`${id}-01T12:00:00Z`)),
       games: [...seasonGames].sort((a, b) => +new Date(b.date) - +new Date(a.date)),
-      standings: getStandings(seasonGames),
+      standings: getStandings(seasonGames, players),
       teamStandings: getTeamStandings(seasonGames),
     }));
 }
 
-export function getSeason(id: string) {
-  return getSeasons().find((season) => season.id === id);
+export async function getSeason(id: string) {
+  const seasons = await getSeasons();
+  return seasons.find((season) => season.id === id);
 }
 
-export function getCurrentSeason() {
-  return getSeasons()[0];
+export async function getCurrentSeason() {
+  const seasons = await getSeasons();
+  return seasons[0];
 }
 
-export function getPlayerProfile(id: string) {
+export async function getPlayerProfile(id: string) {
+  const [games, players] = await Promise.all([getGames(), getPlayers()]);
   const player = players.find((candidate) => candidate.id === id);
   if (!player) return undefined;
 
-  const allStandings = getStandings(games);
-  const statisticsStandings = getStatisticsStandings();
+  const allStandings = getStandings(games, players);
+  const statisticsStandings = getStandings(games, players, statisticsPointsRule);
   const standing = allStandings.find((row) => row.player.id === id)!;
   const statisticsPosition = statisticsStandings.findIndex((row) => row.player.id === id) + 1;
-  const appearances = sortedGames().flatMap((game) => {
+  const gamesByDate = [...games].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  const appearances = gamesByDate.flatMap((game) => {
     const sides = [
       { team: game.teamA, opponent: game.teamB },
       { team: game.teamB, opponent: game.teamA },
@@ -230,7 +239,8 @@ export function getPlayerProfile(id: string) {
     games: favoriteColorEntry[1],
   } : undefined;
 
-  const seasons = getSeasons().flatMap((season) => {
+  const allSeasons = await getSeasons();
+  const seasons = allSeasons.flatMap((season) => {
     const row = season.standings.find((candidate) => candidate.player.id === id)!;
     if (row.games === 0) return [];
     const position = season.standings.findIndex((candidate) => candidate.player.id === id) + 1;
@@ -266,7 +276,7 @@ export function getPlayerProfile(id: string) {
     return [{ id: season.id, label: season.label, position, topScorer, primaryTeam, honors, ...row }];
   });
 
-  const currentSeasonId = getCurrentSeason()?.id;
+  const currentSeasonId = allSeasons[0]?.id;
   const statisticsHonor = statisticsPosition <= 3 ? [{
     seasonId: "general",
     seasonLabel: "Geral",
