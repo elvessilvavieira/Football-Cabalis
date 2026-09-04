@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getGames, getPlayers, teamColors } from "@/lib/data";
+import { getGameById, getPlayers, teamColors } from "@/lib/data";
 import { requireAdmin } from "@/lib/auth";
 import { GameForm } from "@/components/admin/GameForm";
 import { saveGameAction } from "../../actions";
@@ -7,8 +7,7 @@ import { saveGameAction } from "../../actions";
 export default async function EditGamePage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const [games, players] = await Promise.all([getGames(), getPlayers()]);
-  const game = games.find((candidate) => candidate.id === id);
+  const [game, players] = await Promise.all([getGameById(id), getPlayers()]);
   if (!game) notFound();
 
   return (

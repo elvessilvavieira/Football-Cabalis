@@ -7,27 +7,43 @@ import { ADMIN_COOKIE_NAME } from "@/lib/auth-token";
 import { deleteGame, deletePlayer, insertGame, updateGame, upsertPlayer } from "@/lib/db";
 import type { Game, GameTeam } from "@/lib/data";
 
-export async function saveGameAction(formData: FormData) {
-  await requireAdmin();
-
+function gameFromFormData(formData: FormData): { id: string; game: Game } {
   const id = String(formData.get("id") ?? "").trim();
-  const date = String(formData.get("date") ?? "");
+  const date = String(formData.get("date") ?? "").trim() || new Date().toISOString();
   const venue = String(formData.get("venue") ?? "").trim();
   const teamA = JSON.parse(String(formData.get("teamA"))) as GameTeam;
   const teamB = JSON.parse(String(formData.get("teamB"))) as GameTeam;
 
-  const game: Game = {
-    id: id || crypto.randomUUID(),
-    date,
-    venue: venue || undefined,
-    teamA: { ...teamA, name: "A" },
-    teamB: { ...teamB, name: "B" },
+  const gameId = id || crypto.randomUUID();
+  return {
+    id,
+    game: {
+      id: gameId,
+      date,
+      venue: venue || undefined,
+      teamA: { ...teamA, name: "A" },
+      teamB: { ...teamB, name: "B" },
+    },
   };
+}
 
+export async function saveGameAction(formData: FormData) {
+  await requireAdmin();
+
+  const { id, game } = gameFromFormData(formData);
   if (id) await updateGame(game);
   else await insertGame(game);
 
   redirect("/admin");
+}
+
+export async function startLiveGameAction(formData: FormData) {
+  await requireAdmin();
+
+  const { game } = gameFromFormData(formData);
+  await insertGame(game);
+
+  redirect(`/admin/jogos/${game.id}/ao-vivo`);
 }
 
 export async function deleteGameAction(formData: FormData) {
