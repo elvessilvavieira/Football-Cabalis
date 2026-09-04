@@ -1,15 +1,15 @@
 import { CalendarDays, MapPin } from "lucide-react";
 import Link from "next/link";
-import { Game, playerById, teamColors } from "@/lib/data";
+import { Game, getPlayers, teamColors, type Player } from "@/lib/data";
 import { PlayerAvatar } from "./PlayerAvatar";
 
-function TeamRoster({ team }: { team: Game["teamA"] }) {
+function TeamRoster({ team, players }: { team: Game["teamA"]; players: Player[] }) {
   return (
     <div className="roster">
       <div className="roster-title"><span className="color-dot" style={{ background: teamColors[team.color].hex }} />Time {teamColors[team.color].label}</div>
       <div className="roster-list">
         {team.players.map(({ playerId, goals }) => {
-          const player = playerById(playerId);
+          const player = players.find((candidate) => candidate.id === playerId)!;
           return (
             <Link className="roster-player player-link" href={`/jogador/${playerId}`} key={playerId}>
               <PlayerAvatar player={player} size="sm" />
@@ -23,7 +23,8 @@ function TeamRoster({ team }: { team: Game["teamA"] }) {
   );
 }
 
-export function GameCard({ game, featured = false }: { game: Game; featured?: boolean }) {
+export async function GameCard({ game, featured = false }: { game: Game; featured?: boolean }) {
+  const players = await getPlayers();
   const date = new Intl.DateTimeFormat("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(game.date));
   return (
     <article className={`game-card ${featured ? "game-card-featured" : ""}`}>
@@ -44,7 +45,7 @@ export function GameCard({ game, featured = false }: { game: Game; featured?: bo
         <span><CalendarDays size={15} />{date}</span>
         {game.venue && <span><MapPin size={15} />{game.venue}</span>}
       </div>
-      <div className="rosters"><TeamRoster team={game.teamA} /><TeamRoster team={game.teamB} /></div>
+      <div className="rosters"><TeamRoster team={game.teamA} players={players} /><TeamRoster team={game.teamB} players={players} /></div>
     </article>
   );
 }

@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Activity, ArrowLeft, Award, CalendarDays, Crown, Flame, Medal, Shield, Target, TrendingUp, Trophy } from "lucide-react";
-import { getPlayerProfile, players } from "@/lib/data";
+import { getPlayerProfile, getPlayers } from "@/lib/data";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const players = await getPlayers();
   return players.map(({ id }) => ({ id }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const profile = getPlayerProfile((await params).id);
+  const profile = await getPlayerProfile((await params).id);
   if (!profile) return {};
   return {
     title: `${profile.player.name} | Cabalis Futebol`,
@@ -31,7 +32,7 @@ function honorIcon(title: string) {
 }
 
 export default async function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
-  const profile = getPlayerProfile((await params).id);
+  const profile = await getPlayerProfile((await params).id);
   if (!profile) notFound();
 
   const { player, standing } = profile;

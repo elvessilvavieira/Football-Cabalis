@@ -308,3 +308,46 @@ footer p { font-size: 11px; }
   .recent-games-list > a { grid-template-columns: 26px 1fr 37px 1fr; }
   .recent-date { display: none; }
 }
+
+.admin-auth { min-height: 70vh; display: grid; place-items: center; }
+.admin-auth-form { width: min(360px, 100%); padding: 32px; display: grid; gap: 6px; background: white; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 16px 40px rgba(20,49,38,.07); }
+.admin-auth-form h1 { margin: 0 0 4px; font-size: 22px; }
+.admin-auth-form p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+.admin-auth-form label { margin-bottom: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.admin-auth-form input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.admin-auth-form button { margin-top: 14px; padding: 11px; border: 0; border-radius: 8px; color: white; background: var(--green-800); font-weight: 700; cursor: pointer; }
+.admin-error { color: #bd3838; font-size: 12px; }
+
+.admin-page { padding-block: 48px 96px; }
+.admin-header { margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; }
+.admin-logout { padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; }
+.admin-section { margin-bottom: 44px; }
+.admin-section h2 { margin: 0 0 16px; font-size: 20px; }
+.admin-game-form, .admin-player-form { padding: 24px; display: grid; gap: 18px; background: white; border: 1px solid var(--line); border-radius: 16px; }
+.admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.admin-form-row label, .admin-game-form > label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.admin-form-row input, .admin-game-form input, .admin-game-form select { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.admin-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.admin-team { padding: 16px; display: grid; gap: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.admin-team legend { padding: 0 6px; font-size: 12px; font-weight: 800; color: var(--green-800); }
+.admin-team label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.admin-team select, .admin-team input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.admin-player-rows { display: grid; gap: 8px; }
+.admin-player-row { display: grid; grid-template-columns: 1fr 70px auto; gap: 8px; align-items: center; }
+.admin-player-row button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbf5f5; color: #bd3838; cursor: pointer; }
+.admin-add-row { justify-self: start; padding: 7px 12px; border: 1px dashed var(--line); border-radius: 8px; background: transparent; color: var(--green-800); font-weight: 700; cursor: pointer; }
+.admin-submit { justify-self: start; padding: 11px 22px; border: 0; border-radius: 8px; color: white; background: var(--green-800); font-weight: 700; cursor: pointer; }
+.admin-player-form { grid-template-columns: 1fr 1fr 1fr auto; align-items: end; }
+.admin-player-form input { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.admin-player-form button { padding: 10px 16px; border: 0; border-radius: 8px; color: white; background: var(--green-800); font-weight: 700; cursor: pointer; }
+.admin-list { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.admin-list li { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: white; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+.admin-list li.admin-empty { color: var(--muted); justify-content: center; }
+.admin-list-actions { display: flex; align-items: center; gap: 10px; }
+.admin-list-actions a { font-weight: 700; color: var(--green-800); }
+.admin-list-actions button, .admin-list button[type="submit"] { padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbf5f5; color: #bd3838; font-size: 12px; cursor: pointer; }
+
+@media (max-width: 700px) {
+  .admin-form-row, .admin-teams { grid-template-columns: 1fr; }
+  .admin-player-form { grid-template-columns: 1fr; }
+}
