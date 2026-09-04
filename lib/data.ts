@@ -1,8 +1,8 @@
-import { getGames, getPlayers } from "@/lib/db";
+import { getGameById, getGames, getPlayers } from "@/lib/db";
 import { teamColors } from "@/src/data/types";
 import type { Game, GameTeam, Player } from "@/src/data/types";
 
-export { getGames, getPlayers, teamColors };
+export { getGameById, getGames, getPlayers, teamColors };
 export type { Game, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/src/data/types";
 
 export type Standing = ReturnType<typeof getStandings>[number];
