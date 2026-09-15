@@ -42,6 +42,12 @@ export const getPlayers = unstable_cache(
   { tags: ["players"] },
 );
 
+export async function getGameById(id: string): Promise<Game | undefined> {
+  const { data, error } = await getClient().from("games").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`Failed to fetch game: ${error.message}`);
+  return data ? rowToGame(data as GameRow) : undefined;
+}
+
 export async function insertGame(game: Game) {
   const { error } = await getClient().from("games").insert({
     id: game.id,
@@ -63,6 +69,24 @@ export async function updateGame(game: Game) {
   }).eq("id", game.id);
   if (error) throw new Error(`Failed to update game: ${error.message}`);
   revalidateTag("games", "max");
+}
+
+export async function adjustPlayerGoal(gameId: string, team: "A" | "B", playerId: string, delta: number) {
+  const client = getClient();
+  const { data, error } = await client.from("games").select("*").eq("id", gameId).single();
+  if (error) throw new Error(`Failed to load game: ${error.message}`);
+  const row = data as GameRow;
+  const key = team === "A" ? "team_a" : "team_b";
+  const current = row[key];
+  const nextPlayers = current.players.map((p) =>
+    p.playerId === playerId ? { ...p, goals: Math.max(0, p.goals + delta) } : p,
+  );
+  const nextTeam = { ...current, players: nextPlayers, score: nextPlayers.reduce((sum, p) => sum + p.goals, 0) };
+
+  const { error: updateError } = await client.from("games").update({ [key]: nextTeam }).eq("id", gameId);
+  if (updateError) throw new Error(`Failed to update goal: ${updateError.message}`);
+  revalidateTag("games", "max");
+  return rowToGame({ ...row, [key]: nextTeam });
 }
 
 export async function deleteGame(id: string) {
