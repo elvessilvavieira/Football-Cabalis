@@ -6,7 +6,7 @@ import { getSeasons } from "@/lib/data";
 export default async function TemporadasPage() {
   const seasons = await getSeasons();
   return <main>
-    <section className="page-hero"><div className="container"><span className="eyebrow"><span /> HISTÓRICO MENSAL</span><h1>Temporadas</h1><p>Os melhores jogadores, times campeões, pódios, jogos e rankings de cada mês.</p></div></section>
+    <section className="page-hero"><CalendarDays className="hero-page-icon" aria-hidden="true" strokeWidth={1.1} /><div className="container"><span className="eyebrow"><span /> HISTÓRICO MENSAL</span><h1>Temporadas</h1><p>Os melhores jogadores, times campeões, pódios, jogos e rankings de cada mês.</p></div></section>
     <section className="container seasons-grid">{seasons.map((season, seasonIndex) => {
       const podium = season.standings.slice(0, 3);
       const championTeam = season.teamStandings[0];

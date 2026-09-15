@@ -22,7 +22,7 @@ export default async function StatisticsPage() {
     .sort((a, b) => b.goalsScored - a.goalsScored || a.player.name.localeCompare(b.player.name));
 
   return <main>
-    <section className="page-hero"><div className="container">
+    <section className="page-hero"><BarChart3 className="hero-page-icon" aria-hidden="true" strokeWidth={1.1} /><div className="container">
       <span className="eyebrow"><span /> HISTÓRICO COMPLETO</span>
       <h1>Estatísticas</h1>
       <p>{games.length} jogos de {seasons.length} {seasons.length === 1 ? "temporada" : "temporadas"} reunidos num único ranking.</p>

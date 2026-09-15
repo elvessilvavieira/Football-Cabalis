@@ -147,6 +147,7 @@ export function GameForm({ players, teamColors, action, liveAction, submitLabel,
 
       <input type="hidden" name="teamA" value={JSON.stringify(teamA)} />
       <input type="hidden" name="teamB" value={JSON.stringify(teamB)} />
+      <input type="hidden" name="access" value={initial?.access ?? "admin"} />
 
       <div className="admin-form-actions">
         <button type="submit" className="admin-submit">{submitLabel}</button>

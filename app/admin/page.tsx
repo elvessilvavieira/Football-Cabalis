@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { getGames, getPlayers, teamColors } from "@/lib/data";
 import { requireAdmin } from "@/lib/auth";
 import { GameForm } from "@/components/admin/GameForm";
-import { deleteGameAction, deletePlayerAction, logoutAction, savePlayerAction, saveGameAction, startLiveGameAction } from "./actions";
+import { GameListActions } from "@/components/admin/GameListActions";
+import { deletePlayerAction, logoutAction, savePlayerAction, saveGameAction, startLiveGameAction } from "./actions";
 
 export default async function AdminPage() {
   await requireAdmin();
@@ -24,27 +24,22 @@ export default async function AdminPage() {
         <h2>Partidas</h2>
         <ul className="admin-list">
           {games.map((game) => (
-            <li key={game.id}>
-              <span className="admin-list-game">
+            <li key={game.id} className="admin-game-item">
+              <div className="admin-list-game">
                 <span className="admin-list-date">
                   {new Date(game.date).toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
-                <span className="admin-score-chip" style={{ color: teamColors[game.teamA.color].hex }}>
-                  {teamColors[game.teamA.color].label} {game.teamA.score}
+                <span className="admin-matchup">
+                  <span className="admin-score-chip" style={{ color: teamColors[game.teamA.color].hex }}>
+                    {teamColors[game.teamA.color].label} <b>{game.teamA.score}</b>
+                  </span>
+                  <span className="admin-score-sep">—</span>
+                  <span className="admin-score-chip" style={{ color: teamColors[game.teamB.color].hex }}>
+                    <b>{game.teamB.score}</b> {teamColors[game.teamB.color].label}
+                  </span>
                 </span>
-                <span className="admin-score-sep">x</span>
-                <span className="admin-score-chip" style={{ color: teamColors[game.teamB.color].hex }}>
-                  {game.teamB.score} {teamColors[game.teamB.color].label}
-                </span>
-              </span>
-              <div className="admin-list-actions">
-                <Link href={`/admin/jogos/${game.id}/ao-vivo`}>Ao vivo</Link>
-                <Link href={`/admin/jogos/${game.id}`}>Editar</Link>
-                <form action={deleteGameAction}>
-                  <input type="hidden" name="id" value={game.id} />
-                  <button type="submit">Eliminar</button>
-                </form>
               </div>
+              <GameListActions gameId={game.id} access={game.access} />
             </li>
           ))}
           {games.length === 0 && <li className="admin-empty">Ainda não há partidas registadas.</li>}

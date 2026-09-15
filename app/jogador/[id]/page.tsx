@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Activity, ArrowLeft, Award, CalendarDays, Crown, Flame, Medal, Shield, Target, TrendingUp, Trophy } from "lucide-react";
+import { Activity, ArrowLeft, Award, CalendarDays, Crown, Flame, Medal, Shield, Target, TrendingUp, Trophy, Users } from "lucide-react";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { getPlayerProfile, getPlayers } from "@/lib/data";
 
 export async function generateStaticParams() {
@@ -91,6 +92,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
       {profile.seasons.length > 0 ? <div className="season-performance-grid">{profile.seasons.map((season) => <Link className="season-performance-card" href={`/temporadas/${season.id}`} key={season.id}>
         <div className="season-performance-head"><span><small>Temporada</small><strong>{season.label}</strong>{season.primaryTeam && <em className="season-primary-team"><i style={{ backgroundColor: season.primaryTeam.hex }} />Time {season.primaryTeam.label} <b>|</b> {season.primaryTeam.position}.º lugar</em>}</span><b className={`season-position season-position-${season.position}`}>#{season.position}</b></div>
         <div className="season-performance-stats"><span><b>{season.games}</b><small>Jogos</small></span><span><b>{season.wins}</b><small>Vitórias</small></span><span><b>{season.points}</b><small>Pontos</small></span><span><b>{season.goalsScored}</b><small>Golos</small></span><span><b>{season.goalDifference > 0 ? `+${season.goalDifference}` : season.goalDifference}</b><small>Saldo</small></span></div>
+        <div className="season-team-games">{season.teams.map((team) => <span key={team.color}><i style={{ backgroundColor: team.hex }} /><b>{team.games}</b> {team.games === 1 ? "jogo" : "jogos"} pelo Time {team.label}</span>)}</div>
         {season.honors.length > 0 && <div className="season-honor-tags">{season.honors.map((honor) => <em key={honor}>{honorIcon(honor)} {honor}</em>)}</div>}
       </Link>)}</div> : <div className="profile-empty"><CalendarDays size={25} /><span><strong>Sem temporadas disputadas</strong><small>As estatísticas surgirão depois do primeiro jogo.</small></span></div>}
 
@@ -98,6 +100,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         <section>
           <div className="profile-section-heading compact"><div><span className="section-kicker"><Target size={15} /> MAIS GOLOS NUM JOGO</span><h2>Melhor atuação</h2></div></div>
           {profile.bestScoringGame ? <Link className="best-game-card" href={`/temporadas/${profile.bestScoringGame.game.date.slice(0, 7)}`}>
+            <span className="best-game-player-team"><i style={{ backgroundColor: profile.bestScoringGame.colorHex }} />Jogou pelo Time {profile.bestScoringGame.colorLabel}</span>
             <div><span className="team-standing-swatch" style={{ backgroundColor: profile.bestScoringGame.colorHex }} /><small>Time {profile.bestScoringGame.colorLabel}</small><strong>{profile.bestScoringGame.scoreFor}–{profile.bestScoringGame.scoreAgainst}</strong><small>Time {profile.bestScoringGame.opponentLabel}</small><span className="team-standing-swatch" style={{ backgroundColor: profile.bestScoringGame.opponentHex }} /></div>
             <p><b>{profile.bestScoringGame.goals}</b><span>{profile.bestScoringGame.goals === 1 ? "golo marcado" : "golos marcados"}<small>{formatDate(profile.bestScoringGame.game.date, true)}</small></span></p>
           </Link> : <div className="profile-empty small"><Target size={22} /><span><strong>Sem atuações registadas</strong></span></div>}
@@ -105,15 +108,44 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         <section>
           <div className="profile-section-heading compact"><div><span className="section-kicker"><Activity size={15} /> HISTÓRICO</span><h2>Jogos recentes</h2></div></div>
           {profile.appearances.length > 0 ? <div className="recent-games-list">{profile.appearances.slice(0, 6).map((appearance) => <Link href={`/temporadas/${appearance.game.date.slice(0, 7)}`} key={appearance.game.id}>
-            <span className={`recent-result form-${appearance.result}`}>{appearance.result === "win" ? "V" : appearance.result === "draw" ? "E" : "D"}</span>
-            <span className="recent-date">{formatDate(appearance.game.date)}</span>
-            <span className="recent-colors"><i style={{ backgroundColor: appearance.colorHex }} /> {appearance.colorLabel}</span>
-            <strong>{appearance.scoreFor}–{appearance.scoreAgainst}</strong>
-            <span className="recent-colors opponent">{appearance.opponentLabel} <i style={{ backgroundColor: appearance.opponentHex }} /></span>
-            {appearance.goals > 0 && <em>{appearance.goals} {appearance.goals === 1 ? "golo" : "golos"}</em>}
+            <span className="recent-game-meta"><span className={`recent-result form-${appearance.result}`}>{appearance.result === "win" ? "V" : appearance.result === "draw" ? "E" : "D"}</span><span><b>{resultLabel[appearance.result]}</b><span className="recent-date">{formatDate(appearance.game.date)}</span></span></span>
+            <span className="recent-matchup">
+              <span className="recent-player-team"><small>Jogou pelo</small><span style={{ color: appearance.colorHex, backgroundColor: `color-mix(in srgb, ${appearance.colorHex} 12%, white)` }}><i style={{ backgroundColor: appearance.colorHex }} />Time {appearance.colorLabel}</span></span>
+              <strong>{appearance.scoreFor}<i>–</i>{appearance.scoreAgainst}</strong>
+              <span className="recent-opponent"><small>contra</small><span>Time {appearance.opponentLabel}<i style={{ backgroundColor: appearance.opponentHex }} /></span></span>
+            </span>
+            {appearance.goals > 0 && <em><Target size={13} /><b>{appearance.goals}</b> {appearance.goals === 1 ? "golo" : "golos"}</em>}
           </Link>)}</div> : <div className="profile-empty small"><Activity size={22} /><span><strong>Sem jogos registados</strong></span></div>}
         </section>
       </div>
+
+      <section className="best-friends-section">
+        <div className="profile-section-heading">
+          <div><span className="section-kicker"><Users size={15} /> JOGADORES COM QUEM MAIS JOGOU</span><h2>Melhores Amigos</h2></div>
+        </div>
+        {profile.bestFriends.length > 0 ? <div className="best-friends-grid">
+          {profile.bestFriends.map((friend, index) => <Link className="best-friend-card" href={`/jogador/${friend.player.id}`} key={friend.player.id}>
+            <span className="best-friend-position">{index + 1}</span>
+            <PlayerAvatar player={friend.player} size="lg" />
+            <span className="best-friend-copy"><strong>{friend.player.name}</strong><small>{friend.games} {friend.games === 1 ? "jogo juntos" : "jogos juntos"}</small></span>
+            <ArrowLeft className="best-friend-arrow" size={17} />
+          </Link>)}
+        </div> : <div className="profile-empty"><Users size={25} /><span><strong>Ainda sem companheiros registados</strong><small>As melhores parcerias aparecerão depois dos próximos jogos.</small></span></div>}
+      </section>
+
+      <section className="rivals-section">
+        <div className="profile-section-heading">
+          <div><span className="section-kicker"><Shield size={15} /> JOGADORES COM QUEM MAIS JOGOU CONTRA</span><h2>Maiores Rivais</h2></div>
+        </div>
+        {profile.biggestRivals.length > 0 ? <div className="best-friends-grid">
+          {profile.biggestRivals.map((rival, index) => <Link className="best-friend-card rival-card" href={`/jogador/${rival.player.id}`} key={rival.player.id}>
+            <span className="best-friend-position">{index + 1}</span>
+            <PlayerAvatar player={rival.player} size="lg" />
+            <span className="best-friend-copy"><strong>{rival.player.name}</strong><small>{rival.games} {rival.games === 1 ? "jogo contra" : "jogos contra"}</small></span>
+            <ArrowLeft className="best-friend-arrow" size={17} />
+          </Link>)}
+        </div> : <div className="profile-empty"><Shield size={25} /><span><strong>Ainda sem rivais registados</strong><small>Os maiores rivais aparecerão depois dos próximos jogos.</small></span></div>}
+      </section>
     </section>
   </main>;
 }

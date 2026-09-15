@@ -9,6 +9,7 @@ export const teamColors = {
 
 export type TeamColor = keyof typeof teamColors;
 export type TeamName = "A" | "B";
+export type GameAccess = "admin" | "editor";
 
 export type Player = {
   id: string;
@@ -32,6 +33,7 @@ export type Game = {
   id: string;
   date: string;
   venue?: string;
+  access: GameAccess;
   teamA: GameTeam;
   teamB: GameTeam;
 };

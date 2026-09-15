@@ -1,11 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { ADMIN_COOKIE_NAME } from "@/lib/auth-token";
-import { deleteGame, deletePlayer, insertGame, updateGame, upsertPlayer } from "@/lib/db";
-import type { Game, GameTeam } from "@/lib/data";
+import { deleteGame, deletePlayer, insertGame, updateGame, updateGameAccess, upsertPlayer } from "@/lib/db";
+import type { Game, GameAccess, GameTeam } from "@/lib/data";
 
 function gameFromFormData(formData: FormData): { id: string; game: Game } {
   const id = String(formData.get("id") ?? "").trim();
@@ -13,6 +14,7 @@ function gameFromFormData(formData: FormData): { id: string; game: Game } {
   const venue = String(formData.get("venue") ?? "").trim();
   const teamA = JSON.parse(String(formData.get("teamA"))) as GameTeam;
   const teamB = JSON.parse(String(formData.get("teamB"))) as GameTeam;
+  const access: GameAccess = formData.get("access") === "editor" ? "editor" : "admin";
 
   const gameId = id || crypto.randomUUID();
   return {
@@ -21,6 +23,7 @@ function gameFromFormData(formData: FormData): { id: string; game: Game } {
       id: gameId,
       date,
       venue: venue || undefined,
+      access,
       teamA: { ...teamA, name: "A" },
       teamB: { ...teamB, name: "B" },
     },
@@ -33,6 +36,7 @@ export async function saveGameAction(formData: FormData) {
   const { id, game } = gameFromFormData(formData);
   if (id) await updateGame(game);
   else await insertGame(game);
+  updateTag("games");
 
   redirect("/admin");
 }
@@ -42,6 +46,7 @@ export async function startLiveGameAction(formData: FormData) {
 
   const { game } = gameFromFormData(formData);
   await insertGame(game);
+  updateTag("games");
 
   redirect(`/admin/jogos/${game.id}/ao-vivo`);
 }
@@ -49,7 +54,15 @@ export async function startLiveGameAction(formData: FormData) {
 export async function deleteGameAction(formData: FormData) {
   await requireAdmin();
   await deleteGame(String(formData.get("id")));
+  updateTag("games");
   redirect("/admin");
+}
+
+export async function updateGameAccessAction(gameId: string, access: GameAccess) {
+  await requireAdmin();
+  await updateGameAccess(gameId, access);
+  updateTag("games");
+  revalidatePath("/admin");
 }
 
 export async function savePlayerAction(formData: FormData) {
@@ -61,12 +74,14 @@ export async function savePlayerAction(formData: FormData) {
   if (!id || !name) throw new Error("Id e nome são obrigatórios.");
 
   await upsertPlayer({ id, name, photo: photo || undefined });
+  updateTag("players");
   redirect("/admin");
 }
 
 export async function deletePlayerAction(formData: FormData) {
   await requireAdmin();
   await deletePlayer(String(formData.get("id")));
+  updateTag("players");
   redirect("/admin");
 }
 
