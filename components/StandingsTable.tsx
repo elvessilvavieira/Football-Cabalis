@@ -3,7 +3,8 @@
 import { Medal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Standing } from "@/lib/data";
+import type { Captaincy, Standing } from "@/lib/data";
+import { captainciesForPlayer } from "./CaptainBadges";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { SortableHeader, type SortDirection } from "./SortableHeader";
 
@@ -22,7 +23,7 @@ const columns: { key: SortKey; label: string }[] = [
   { key: "goalDifference", label: "Saldo" },
 ];
 
-export function StandingsTable({ standings, separateInactivePlayers = false }: { standings: Standing[]; separateInactivePlayers?: boolean }) {
+export function StandingsTable({ standings, captaincies = [], separateInactivePlayers = false }: { standings: Standing[]; captaincies?: Captaincy[]; separateInactivePlayers?: boolean }) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection } | null>(null);
   const officialPositions = useMemo(() => new Map(standings.map((row, index) => [row.player.id, index + 1])), [standings]);
   const sortedStandings = useMemo(() => {
@@ -64,7 +65,7 @@ export function StandingsTable({ standings, separateInactivePlayers = false }: {
               return (
               <tr className={startsInactivePlayers ? "inactive-players-start" : undefined} key={row.player.id}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
-                <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></Link></td>
+                <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} captaincies={captainciesForPlayer(captaincies, row.player.id)} /><strong>{row.player.name}</strong></Link></td>
                 <td>{row.games}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td>
                 <td><span className={`points ${row.points > 0 ? "positive" : row.points < 0 ? "negative" : ""}`}>{row.points}</span></td>
                 <td>{row.goalsScored}</td><td>{row.goalsFor}</td><td>{row.goalsAgainst}</td><td>{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</td>

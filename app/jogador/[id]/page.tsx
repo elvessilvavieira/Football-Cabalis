@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Activity, ArrowLeft, Award, CalendarDays, Crown, Flame, Medal, Shield, Target, TrendingUp, Trophy, Users } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { RivalComparison } from "@/components/RivalComparison";
 import { getPlayerProfile, getPlayers } from "@/lib/data";
 
 export async function generateStaticParams() {
@@ -82,6 +83,25 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         <article><span><Flame size={18} /></span><small>Maior sequência</small><strong>{profile.longestWinStreak}</strong><em>{profile.longestWinStreak === 1 ? "vitória seguida" : "vitórias seguidas"}</em></article>
       </div>
 
+      {profile.captaincies.length > 0 && <>
+        <div className="profile-section-heading captaincies-heading"><div><span className="section-kicker"><Shield size={15} /> CAPITANIA</span><h2>Capitão do time</h2></div><p>{profile.captaincies.length} {profile.captaincies.length === 1 ? "time liderado" : "times liderados"}</p></div>
+        <div className="captaincy-grid">{profile.captaincies.map((captaincy) => <article className={`captaincy-card captaincy-card-${captaincy.rank}`} key={captaincy.teamColor}>
+          <div className="captaincy-identity">
+            <span className={`captain-badge captain-badge-${captaincy.rank}`}>C</span>
+            <span className="captaincy-team-color" style={{ backgroundColor: `color-mix(in srgb, ${captaincy.teamHex} 14%, white)` }}>
+              <i style={{ backgroundColor: captaincy.teamHex }} />
+            </span>
+            <span className="captaincy-copy"><small>Time {captaincy.teamLabel}</small><strong>{captaincy.title}</strong></span>
+          </div>
+          <div className="captaincy-stats">
+            <span><small>Jogos pelo time</small><strong>{captaincy.games}</strong></span>
+            <span><small>Primeiro jogo</small><strong>{formatDate(captaincy.firstAppearance)}</strong></span>
+            <span><small>Vitórias pelo time</small><strong>{captaincy.wins}</strong></span>
+            <span><small>Golos pelo time</small><strong>{captaincy.goals}</strong></span>
+          </div>
+        </article>)}</div>
+      </>}
+
       <div className="profile-section-heading"><div><span className="section-kicker"><Award size={15} /> PALMARÉS</span><h2>Conquistas</h2></div><p>{profile.honors.length} {profile.honors.length === 1 ? "distinção" : "distinções"}</p></div>
       {profile.honors.length > 0 ? <div className="honors-grid">{profile.honors.map((honor) => <Link className={`honor-card honor-${honor.title.toLowerCase().replaceAll(" ", "-").normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`} href={honor.href} key={`${honor.seasonId}-${honor.title}`}>
         {honor.ongoing && <em className="honor-ongoing">em andamento</em>}
@@ -145,6 +165,11 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
             <ArrowLeft className="best-friend-arrow" size={17} />
           </Link>)}
         </div> : <div className="profile-empty"><Shield size={25} /><span><strong>Ainda sem rivais registados</strong><small>Os maiores rivais aparecerão depois dos próximos jogos.</small></span></div>}
+        {profile.biggestRivals[0] && <RivalComparison
+          player={player}
+          comparisons={profile.rivalComparisons}
+          initialRivalId={profile.biggestRivals[0].player.id}
+        />}
       </section>
     </section>
   </main>;

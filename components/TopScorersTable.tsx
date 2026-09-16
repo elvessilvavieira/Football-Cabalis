@@ -3,13 +3,14 @@
 import { Medal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Standing } from "@/lib/data";
+import type { Captaincy, Standing } from "@/lib/data";
+import { captainciesForPlayer } from "./CaptainBadges";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { SortableHeader, type SortDirection } from "./SortableHeader";
 
 type SortKey = "player" | "games" | "goalsScored";
 
-export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
+export function TopScorersTable({ scorers, captaincies = [] }: { scorers: Standing[]; captaincies?: Captaincy[] }) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection } | null>(null);
   const officialPositions = useMemo(() => new Map(scorers.map((row, index) => [row.player.id, index + 1])), [scorers]);
   const sortedScorers = useMemo(() => {
@@ -46,7 +47,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
               return (
               <tr key={row.player.id}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
-                <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></Link></td>
+                <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} captaincies={captainciesForPlayer(captaincies, row.player.id)} /><strong>{row.player.name}</strong></Link></td>
                 <td>{row.games}</td>
                 <td><strong className="goals-total">{row.goalsScored}</strong></td>
               </tr>
