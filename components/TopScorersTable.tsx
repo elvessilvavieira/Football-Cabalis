@@ -7,7 +7,7 @@ import type { Standing } from "@/lib/data";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { SortableHeader, type SortDirection } from "./SortableHeader";
 
-type SortKey = "player" | "goalsScored";
+type SortKey = "player" | "games" | "goalsScored";
 
 export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection } | null>(null);
@@ -18,7 +18,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
     return [...scorers].sort((a, b) => {
       const comparison = sort.key === "player"
         ? a.player.name.localeCompare(b.player.name, "pt", { sensitivity: "base" })
-        : a.goalsScored - b.goalsScored;
+        : a[sort.key] - b[sort.key];
       return (sort.direction === "asc" ? comparison : -comparison)
         || officialPositions.get(a.player.id)! - officialPositions.get(b.player.id)!;
     });
@@ -37,7 +37,8 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
           <thead><tr>
             <SortableHeader active={!sort} direction="asc" onClick={() => setSort(null)} title="Restaurar ranking oficial">#</SortableHeader>
             <SortableHeader active={sort?.key === "player"} direction={sort?.key === "player" ? sort.direction : undefined} onClick={() => changeSort("player")}>Jogador</SortableHeader>
-            <SortableHeader active={sort?.key === "goalsScored"} direction={sort?.key === "goalsScored" ? sort.direction : undefined} onClick={() => changeSort("goalsScored")}>Golos</SortableHeader>
+            <SortableHeader active={sort?.key === "games"} direction={sort?.key === "games" ? sort.direction : undefined} onClick={() => changeSort("games")}>J</SortableHeader>
+            <SortableHeader active={sort?.key === "goalsScored"} direction={sort?.key === "goalsScored" ? sort.direction : undefined} onClick={() => changeSort("goalsScored")}>GM</SortableHeader>
           </tr></thead>
           <tbody>
             {sortedScorers.map((row) => {
@@ -46,6 +47,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
               <tr key={row.player.id}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
                 <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></Link></td>
+                <td>{row.games}</td>
                 <td><strong className="goals-total">{row.goalsScored}</strong></td>
               </tr>
               );
@@ -53,6 +55,7 @@ export function TopScorersTable({ scorers }: { scorers: Standing[] }) {
           </tbody>
         </table>
       </div>
+      <p className="table-note">J = jogos · GM = golos marcados</p>
     </div>
   );
 }

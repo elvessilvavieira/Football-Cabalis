@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, TrendingUp } from "lucide-react";
+import { ArrowRight, CalendarDays, TrendingUp, Trophy } from "lucide-react";
 import { GameCard } from "@/components/GameCard";
+import { PlayerOfTheMoment } from "@/components/PlayerOfTheMoment";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamStandingsTable } from "@/components/TeamStandingsTable";
 import { TopScorersTable } from "@/components/TopScorersTable";
@@ -18,13 +19,15 @@ export default async function Home() {
     .filter((row) => row.goalsScored > 0)
     .sort((a, b) => b.goalsScored - a.goalsScored || a.player.name.localeCompare(b.player.name));
   return <main>
-    <section className="hero"><div className="hero-pattern" /><div className="container hero-content">
+    <section className="hero"><div className="hero-pattern" /><Trophy className="hero-page-icon hero-page-icon-home" aria-hidden="true" strokeWidth={1.1} /><div className="container hero-content">
+      <span className="hero-kicker"><span /> FUTEBOL ENTRE AMIGOS</span>
       <h1>O jogo acaba.<br /><em>A história fica.</em></h1><p>Resultados, golos e o ranking oficial da nossa pelada.</p>
       <div className="hero-stats"><div><strong>{games.length}</strong><span>partidas</span></div><div><strong>{totalGoals}</strong><span>golos</span></div><div><strong>{totalPlayers}</strong><span>jogadores</span></div></div>
     </div></section>
     <section className="container content-section standings-section">
+      {season.standings[0]?.games > 0 && <PlayerOfTheMoment leader={season.standings[0]} games={season.games} seasonLabel={season.label} />}
       <div className="section-heading"><div><span className="section-kicker"><TrendingUp size={15} /> TEMPORADA ATUAL</span><h2>Ranking de jogadores de {season.label}</h2></div><p>Vitória <b>3 pts</b> · Empate <b>1 pt</b> · Derrota <b>0 pt</b></p></div>
-      <StandingsTable standings={season.standings} />
+      <StandingsTable separateInactivePlayers standings={season.standings} />
       <div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> TIMES</span><h2>Classificação de times de {season.label}</h2></div>
       <TeamStandingsTable standings={season.teamStandings} />
       {topScorers.length > 0 && <><div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> GOLOS</span><h2>Melhores marcadores de {season.label}</h2></div><TopScorersTable scorers={topScorers} /></>}

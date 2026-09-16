@@ -16,26 +16,30 @@ const columns: { key: SortKey; label: string }[] = [
   { key: "draws", label: "E" },
   { key: "losses", label: "D" },
   { key: "points", label: "Pontos" },
-  { key: "goalsScored", label: "Golos marcados" },
-  { key: "goalsFor", label: "Golos a favor" },
-  { key: "goalsAgainst", label: "Golos sofridos" },
+  { key: "goalsScored", label: "GM" },
+  { key: "goalsFor", label: "GA" },
+  { key: "goalsAgainst", label: "GS" },
   { key: "goalDifference", label: "Saldo" },
 ];
 
-export function StandingsTable({ standings }: { standings: Standing[] }) {
+export function StandingsTable({ standings, separateInactivePlayers = false }: { standings: Standing[]; separateInactivePlayers?: boolean }) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection } | null>(null);
   const officialPositions = useMemo(() => new Map(standings.map((row, index) => [row.player.id, index + 1])), [standings]);
   const sortedStandings = useMemo(() => {
     if (!sort) return standings;
 
     return [...standings].sort((a, b) => {
+      const participationComparison = separateInactivePlayers
+        ? Number(a.games === 0) - Number(b.games === 0)
+        : 0;
       const comparison = sort.key === "player"
         ? a.player.name.localeCompare(b.player.name, "pt", { sensitivity: "base" })
         : a[sort.key] - b[sort.key];
-      return (sort.direction === "asc" ? comparison : -comparison)
+      return participationComparison
+        || (sort.direction === "asc" ? comparison : -comparison)
         || officialPositions.get(a.player.id)! - officialPositions.get(b.player.id)!;
     });
-  }, [officialPositions, sort, standings]);
+  }, [officialPositions, separateInactivePlayers, sort, standings]);
 
   function changeSort(key: SortKey) {
     setSort((current) => current?.key === key
@@ -52,10 +56,13 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
             {columns.map((column) => <SortableHeader key={column.key} active={sort?.key === column.key} direction={sort?.key === column.key ? sort.direction : undefined} onClick={() => changeSort(column.key)}>{column.label}</SortableHeader>)}
           </tr></thead>
           <tbody>
-            {sortedStandings.map((row) => {
+            {sortedStandings.map((row, index) => {
               const position = officialPositions.get(row.player.id)!;
+              const startsInactivePlayers = separateInactivePlayers
+                && row.games === 0
+                && (index === 0 || sortedStandings[index - 1].games > 0);
               return (
-              <tr key={row.player.id}>
+              <tr className={startsInactivePlayers ? "inactive-players-start" : undefined} key={row.player.id}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
                 <td><Link className="player-cell player-link" href={`/jogador/${row.player.id}`}><PlayerAvatar player={row.player} /><strong>{row.player.name}</strong></Link></td>
                 <td>{row.games}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td>
@@ -67,7 +74,7 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
           </tbody>
         </table>
       </div>
-      <p className="table-note">J = jogos · V = vitórias · E = empates · D = derrotas · Desempate: saldo de golos e golos marcados</p>
+      <p className="table-note">J = jogos · V = vitórias · E = empates · D = derrotas · GM = golos marcados · GA = golos a favor · GS = golos sofridos · Desempate: saldo de golos e golos marcados</p>
     </div>
   );
 }

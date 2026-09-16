@@ -3,7 +3,7 @@ import { teamColors } from "@/src/data/types";
 import type { Game, GameTeam, Player } from "@/src/data/types";
 
 export { getGameById, getGames, getPlayers, teamColors };
-export type { Game, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/src/data/types";
+export type { Game, GameAccess, GamePlayer, GameTeam, Player, TeamColor, TeamName } from "@/src/data/types";
 
 export type Standing = ReturnType<typeof getStandings>[number];
 export type TeamStanding = ReturnType<typeof getTeamStandings>[number];
@@ -36,7 +36,12 @@ export async function sortedGames() {
   return [...games].sort((a, b) => +new Date(b.date) - +new Date(a.date));
 }
 
-export function getStandings(seasonGames: Game[], allPlayers: Player[], pointsRule: PointsRule = officialPointsRule) {
+export function getStandings(
+  seasonGames: Game[],
+  allPlayers: Player[],
+  pointsRule: PointsRule = officialPointsRule,
+  inactivePlayersLast = false,
+) {
   const table = new Map(allPlayers.map((player) => [player.id, {
     player,
     points: 0,
@@ -78,7 +83,8 @@ export function getStandings(seasonGames: Game[], allPlayers: Player[], pointsRu
   });
 
   return [...table.values()].sort((a, b) =>
-    b.points - a.points
+    (inactivePlayersLast ? Number(a.games === 0) - Number(b.games === 0) : 0)
+    || b.points - a.points
     || b.goalDifference - a.goalDifference
     || b.goalsScored - a.goalsScored
     || a.player.name.localeCompare(b.player.name),
@@ -173,7 +179,7 @@ export async function getSeasons(): Promise<Season[]> {
       label: new Intl.DateTimeFormat("pt-PT", { month: "long", year: "numeric", timeZone: "UTC" })
         .format(new Date(`${id}-01T12:00:00Z`)),
       games: [...seasonGames].sort((a, b) => +new Date(b.date) - +new Date(a.date)),
-      standings: getStandings(seasonGames, players),
+      standings: getStandings(seasonGames, players, officialPointsRule, true),
       teamStandings: getTeamStandings(seasonGames),
     }));
 }
@@ -222,6 +228,35 @@ export async function getPlayerProfile(id: string) {
     }];
   });
 
+  const gamesTogether = new Map<string, number>();
+  const gamesAgainst = new Map<string, number>();
+  games.forEach((game) => {
+    const sides = [game.teamA, game.teamB];
+    const teamIndex = sides.findIndex((candidate) => candidate.players.some(({ playerId }) => playerId === id));
+    if (teamIndex === -1) return;
+
+    sides[teamIndex].players.forEach(({ playerId }) => {
+      if (playerId !== id) gamesTogether.set(playerId, (gamesTogether.get(playerId) ?? 0) + 1);
+    });
+    sides[teamIndex === 0 ? 1 : 0].players.forEach(({ playerId }) => {
+      gamesAgainst.set(playerId, (gamesAgainst.get(playerId) ?? 0) + 1);
+    });
+  });
+  const bestFriends = players
+    .flatMap((friend) => {
+      const games = gamesTogether.get(friend.id) ?? 0;
+      return games > 0 ? [{ player: friend, games }] : [];
+    })
+    .sort((a, b) => b.games - a.games || a.player.name.localeCompare(b.player.name))
+    .slice(0, 5);
+  const biggestRivals = players
+    .flatMap((rival) => {
+      const games = gamesAgainst.get(rival.id) ?? 0;
+      return games > 0 ? [{ player: rival, games }] : [];
+    })
+    .sort((a, b) => b.games - a.games || a.player.name.localeCompare(b.player.name))
+    .slice(0, 5);
+
   let longestWinStreak = 0;
   let currentWinStreak = 0;
   [...appearances].reverse().forEach(({ result }) => {
@@ -251,6 +286,14 @@ export async function getPlayerProfile(id: string) {
       counts.set(appearance.color, (counts.get(appearance.color) ?? 0) + 1);
       return counts;
     }, new Map<keyof typeof teamColors, number>());
+    const teams = [...teamAppearances.entries()]
+      .sort(([, gamesA], [, gamesB]) => gamesB - gamesA)
+      .map(([color, games]) => ({
+        color,
+        label: teamColors[color].label,
+        hex: teamColors[color].hex,
+        games,
+      }));
     const primaryTeamEntry = [...teamAppearances.entries()].sort(([colorA, gamesA], [colorB, gamesB]) => {
       if (gamesA !== gamesB) return gamesB - gamesA;
       const positionA = season.teamStandings.findIndex((team) => team.color === colorA);
@@ -273,7 +316,7 @@ export async function getPlayerProfile(id: string) {
       topScorer ? "Melhor marcador" : undefined,
       primaryTeam?.champion ? `Campeão pelo Time ${primaryTeam.label}` : undefined,
     ].filter((honor): honor is string => Boolean(honor));
-    return [{ id: season.id, label: season.label, position, topScorer, primaryTeam, honors, ...row }];
+    return [{ id: season.id, label: season.label, position, topScorer, primaryTeam, teams, honors, ...row }];
   });
 
   const currentSeasonId = allSeasons[0]?.id;
@@ -303,6 +346,8 @@ export async function getPlayerProfile(id: string) {
     standing,
     statisticsPosition,
     appearances,
+    bestFriends,
+    biggestRivals,
     seasons,
     honors,
     currentSeason,

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidateTag, unstable_cache } from "next/cache";
-import type { Game, GameTeam, Player } from "@/src/data/types";
+import type { Game, GameAccess, GameTeam, Player } from "@/src/data/types";
 
 function getClient() {
   const url = process.env.SUPABASE_URL;
@@ -11,11 +11,18 @@ function getClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-type GameRow = { id: string; date: string; venue: string | null; team_a: GameTeam; team_b: GameTeam };
+type GameRow = { id: string; date: string; venue: string | null; access?: GameAccess | null; team_a: GameTeam; team_b: GameTeam };
 type PlayerRow = { id: string; name: string; photo: string | null };
 
 function rowToGame(row: GameRow): Game {
-  return { id: row.id, date: row.date, venue: row.venue ?? undefined, teamA: row.team_a, teamB: row.team_b };
+  return {
+    id: row.id,
+    date: row.date,
+    venue: row.venue ?? undefined,
+    access: row.access === "editor" ? "editor" : "admin",
+    teamA: row.team_a,
+    teamB: row.team_b,
+  };
 }
 
 function rowToPlayer(row: PlayerRow): Player {
@@ -53,6 +60,7 @@ export async function insertGame(game: Game) {
     id: game.id,
     date: game.date,
     venue: game.venue ?? null,
+    access: game.access,
     team_a: game.teamA,
     team_b: game.teamB,
   });
@@ -64,6 +72,7 @@ export async function updateGame(game: Game) {
   const { error } = await getClient().from("games").update({
     date: game.date,
     venue: game.venue ?? null,
+    access: game.access,
     team_a: game.teamA,
     team_b: game.teamB,
   }).eq("id", game.id);
@@ -89,9 +98,39 @@ export async function adjustPlayerGoal(gameId: string, team: "A" | "B", playerId
   return rowToGame({ ...row, [key]: nextTeam });
 }
 
+export async function assignPlayerToTeam(gameId: string, playerId: string, team: "A" | "B" | null) {
+  const client = getClient();
+  const { data, error } = await client.from("games").select("*").eq("id", gameId).single();
+  if (error) throw new Error(`Failed to load game: ${error.message}`);
+
+  const row = data as GameRow;
+  const currentPlayer = [...row.team_a.players, ...row.team_b.players].find((player) => player.playerId === playerId);
+  const goals = currentPlayer?.goals ?? 0;
+  const extraGoalsA = Math.max(0, row.team_a.score - row.team_a.players.reduce((sum, player) => sum + player.goals, 0));
+  const extraGoalsB = Math.max(0, row.team_b.score - row.team_b.players.reduce((sum, player) => sum + player.goals, 0));
+
+  const playersA = row.team_a.players.filter((player) => player.playerId !== playerId);
+  const playersB = row.team_b.players.filter((player) => player.playerId !== playerId);
+  if (team === "A") playersA.push({ playerId, goals });
+  if (team === "B") playersB.push({ playerId, goals });
+
+  const teamA = { ...row.team_a, players: playersA, score: extraGoalsA + playersA.reduce((sum, player) => sum + player.goals, 0) };
+  const teamB = { ...row.team_b, players: playersB, score: extraGoalsB + playersB.reduce((sum, player) => sum + player.goals, 0) };
+  const { error: updateError } = await client.from("games").update({ team_a: teamA, team_b: teamB }).eq("id", gameId);
+  if (updateError) throw new Error(`Failed to update team roster: ${updateError.message}`);
+  revalidateTag("games", "max");
+  return rowToGame({ ...row, team_a: teamA, team_b: teamB });
+}
+
 export async function deleteGame(id: string) {
   const { error } = await getClient().from("games").delete().eq("id", id);
   if (error) throw new Error(`Failed to delete game: ${error.message}`);
+  revalidateTag("games", "max");
+}
+
+export async function updateGameAccess(id: string, access: GameAccess) {
+  const { error } = await getClient().from("games").update({ access }).eq("id", id);
+  if (error) throw new Error(`Failed to update game access: ${error.message}`);
   revalidateTag("games", "max");
 }
 

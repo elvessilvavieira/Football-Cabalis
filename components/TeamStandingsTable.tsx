@@ -14,8 +14,8 @@ const columns: { key: SortKey; label: string }[] = [
   { key: "draws", label: "E" },
   { key: "losses", label: "D" },
   { key: "points", label: "Pontos" },
-  { key: "goalsFor", label: "Golos a favor" },
-  { key: "goalsAgainst", label: "Golos sofridos" },
+  { key: "goalsFor", label: "GA" },
+  { key: "goalsAgainst", label: "GS" },
   { key: "goalDifference", label: "Saldo" },
 ];
 
@@ -64,7 +64,7 @@ export function TeamStandingsTable({ standings }: { standings: TeamStanding[] })
           </tbody>
         </table>
       </div>
-      <p className="table-note">J = jogos · V = vitórias · E = empates · D = derrotas · Desempate: saldo de golos e golos a favor</p>
+      <p className="table-note">J = jogos · V = vitórias · E = empates · D = derrotas · GA = golos a favor · GS = golos sofridos · Desempate: saldo de golos e golos a favor</p>
     </div>
   );
 }

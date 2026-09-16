@@ -2,6 +2,7 @@ import type { Game } from "../types";
 
 export const match20260808: Game = {
   id: "2026-08-08-a-b",
+  access: "admin",
   date: "2026-08-08T18:00:00",
   venue: "Campo Tech Park",
   teamA: {
