@@ -5,10 +5,10 @@ import { PlayerOfTheMoment } from "@/components/PlayerOfTheMoment";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamStandingsTable } from "@/components/TeamStandingsTable";
 import { TopScorersTable } from "@/components/TopScorersTable";
-import { getCurrentSeason, getGames } from "@/lib/data";
+import { getCaptaincies, getCurrentSeason, getGames } from "@/lib/data";
 
 export default async function Home() {
-  const [games, season] = await Promise.all([getGames(), getCurrentSeason()]);
+  const [games, season, captaincies] = await Promise.all([getGames(), getCurrentSeason(), getCaptaincies()]);
   const lastGame = season.games[0];
   const totalGoals = games.reduce((sum, game) => sum + game.teamA.score + game.teamB.score, 0);
   const totalPlayers = new Set(games.flatMap((game) => [
@@ -27,10 +27,10 @@ export default async function Home() {
     <section className="container content-section standings-section">
       {season.standings[0]?.games > 0 && <PlayerOfTheMoment leader={season.standings[0]} games={season.games} seasonLabel={season.label} />}
       <div className="section-heading"><div><span className="section-kicker"><TrendingUp size={15} /> TEMPORADA ATUAL</span><h2>Ranking de jogadores de {season.label}</h2></div><p>Vitória <b>3 pts</b> · Empate <b>1 pt</b> · Derrota <b>0 pt</b></p></div>
-      <StandingsTable separateInactivePlayers standings={season.standings} />
+      <StandingsTable separateInactivePlayers standings={season.standings} captaincies={captaincies} />
       <div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> TIMES</span><h2>Classificação de times de {season.label}</h2></div>
       <TeamStandingsTable standings={season.teamStandings} />
-      {topScorers.length > 0 && <><div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> GOLOS</span><h2>Melhores marcadores de {season.label}</h2></div><TopScorersTable scorers={topScorers} /></>}
+      {topScorers.length > 0 && <><div className="team-standings-heading"><span className="section-kicker"><TrendingUp size={15} /> GOLOS</span><h2>Melhores marcadores de {season.label}</h2></div><TopScorersTable scorers={topScorers} captaincies={captaincies} /></>}
     </section>
     <section className="latest-section"><div className="container">
       <div className="section-heading light"><div><span className="section-kicker"><CalendarDays size={15} /> ÚLTIMA PARTIDA</span><h2>Resultado do último jogo</h2></div><Link className="text-link" href={`/temporadas/${season.id}`}>Ver temporada completa <ArrowRight size={17} /></Link></div>

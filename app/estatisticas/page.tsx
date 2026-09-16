@@ -3,7 +3,7 @@ import { BarChart3 } from "lucide-react";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamStandingsTable } from "@/components/TeamStandingsTable";
 import { TopScorersTable } from "@/components/TopScorersTable";
-import { getGames, getSeasons, getStatisticsStandings, getStatisticsTeamStandings } from "@/lib/data";
+import { getCaptaincies, getGames, getSeasons, getStatisticsStandings, getStatisticsTeamStandings } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Estatísticas | Cabalis Futebol",
@@ -11,11 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default async function StatisticsPage() {
-  const [games, standings, teamStandings, seasons] = await Promise.all([
+  const [games, standings, teamStandings, seasons, captaincies] = await Promise.all([
     getGames(),
     getStatisticsStandings(),
     getStatisticsTeamStandings(),
     getSeasons(),
+    getCaptaincies(),
   ]);
   const topScorers = [...standings]
     .filter((row) => row.goalsScored > 0)
@@ -32,7 +33,7 @@ export default async function StatisticsPage() {
         <div><span className="section-kicker"><BarChart3 size={15} /> TODAS AS TEMPORADAS</span><h2>Ranking histórico de jogadores</h2></div>
         <p>Vitória <b>+1 pt</b> · Empate <b>0 pt</b> · Derrota <b>−1 pt</b></p>
       </div>
-      <StandingsTable standings={standings} />
+      <StandingsTable standings={standings} captaincies={captaincies} />
       <div className="team-standings-heading">
         <span className="section-kicker"><BarChart3 size={15} /> TIMES</span>
         <h2>Classificação de times</h2>
@@ -43,7 +44,7 @@ export default async function StatisticsPage() {
           <span className="section-kicker"><BarChart3 size={15} /> GOLOS</span>
           <h2>Melhores marcadores</h2>
         </div>
-        <TopScorersTable scorers={topScorers} />
+        <TopScorersTable scorers={topScorers} captaincies={captaincies} />
       </>}
     </section>
   </main>;
