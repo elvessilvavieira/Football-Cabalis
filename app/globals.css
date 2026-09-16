@@ -548,3 +548,11 @@ footer p { font-size: 11px; }
   .admin-access-switch { margin-right: auto; }
   .admin-action-divider { display: none; }
 }
+
+@media (max-width: 430px) {
+  .admin-roster-list { grid-template-columns: 1fr; }
+  .admin-team-summary { grid-template-columns: 1fr; }
+  .live-teams { grid-template-columns: 1fr; }
+  .live-score { grid-template-columns: 1fr; gap: 4px; }
+  .live-score-numbers { order: -1; font-size: 40px; }
+}
