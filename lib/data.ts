@@ -8,6 +8,20 @@ export type { Game, GameAccess, GamePlayer, GameTeam, Player, TeamColor, TeamNam
 export type Standing = ReturnType<typeof getStandings>[number];
 export type TeamStanding = ReturnType<typeof getTeamStandings>[number];
 export type PlayerProfile = Awaited<ReturnType<typeof getPlayerProfile>>;
+export type TeamProfile = Awaited<ReturnType<typeof getTeamProfile>>;
+export type CaptainRank = 1 | 2 | 3;
+export type Captaincy = {
+  playerId: string;
+  teamColor: keyof typeof teamColors;
+  teamLabel: string;
+  teamHex: string;
+  rank: CaptainRank;
+  title: "Primeiro capitão" | "Segundo capitão" | "Terceiro capitão";
+  games: number;
+  firstAppearance: string;
+  wins: number;
+  goals: number;
+};
 
 export type Season = {
   id: string;
@@ -25,6 +39,70 @@ type PointsRule = {
 
 const officialPointsRule: PointsRule = { win: 3, draw: 1, loss: 0 };
 const statisticsPointsRule: PointsRule = { win: 1, draw: 0, loss: -1 };
+
+const captainTitles: Record<CaptainRank, Captaincy["title"]> = {
+  1: "Primeiro capitão",
+  2: "Segundo capitão",
+  3: "Terceiro capitão",
+};
+
+export function calculateCaptaincies(games: Game[], players: Player[]): Captaincy[] {
+  type CaptainStats = Omit<Captaincy, "rank" | "title">;
+  const playerNames = new Map(players.map((player) => [player.id, player.name]));
+  const byTeam = new Map<keyof typeof teamColors, Map<string, CaptainStats>>();
+
+  games.forEach((game) => {
+    const sides = [
+      { team: game.teamA, opponent: game.teamB },
+      { team: game.teamB, opponent: game.teamA },
+    ];
+
+    sides.forEach(({ team, opponent }) => {
+      const teamPlayers = byTeam.get(team.color) ?? new Map<string, CaptainStats>();
+      team.players.forEach(({ playerId, goals }) => {
+        const current = teamPlayers.get(playerId) ?? {
+          playerId,
+          teamColor: team.color,
+          teamLabel: teamColors[team.color].label,
+          teamHex: teamColors[team.color].hex,
+          games: 0,
+          firstAppearance: game.date,
+          wins: 0,
+          goals: 0,
+        };
+        current.games += 1;
+        current.firstAppearance = current.firstAppearance.localeCompare(game.date) <= 0 ? current.firstAppearance : game.date;
+        current.wins += Number(team.score > opponent.score);
+        current.goals += goals;
+        teamPlayers.set(playerId, current);
+      });
+      byTeam.set(team.color, teamPlayers);
+    });
+  });
+
+  return [...byTeam.values()].flatMap((teamPlayers) => [...teamPlayers.values()]
+    .sort((a, b) => b.games - a.games
+      || a.firstAppearance.localeCompare(b.firstAppearance)
+      || b.wins - a.wins
+      || b.goals - a.goals
+      || (playerNames.get(a.playerId) ?? a.playerId).localeCompare(playerNames.get(b.playerId) ?? b.playerId, "pt", { sensitivity: "base" }))
+    .slice(0, 3)
+    .map((captain, index) => {
+      const rank = (index + 1) as CaptainRank;
+      return { ...captain, rank, title: captainTitles[rank] };
+    }));
+}
+
+export async function getCaptaincies() {
+  const [games, players] = await Promise.all([getGames(), getPlayers()]);
+  return calculateCaptaincies(games, players);
+}
+
+export function captainciesForPlayer(captaincies: Captaincy[], playerId: string) {
+  return captaincies
+    .filter((captaincy) => captaincy.playerId === playerId)
+    .sort((a, b) => a.rank - b.rank || a.teamLabel.localeCompare(b.teamLabel));
+}
 
 export async function playerById(id: string) {
   const players = await getPlayers();
@@ -256,6 +334,58 @@ export async function getPlayerProfile(id: string) {
     })
     .sort((a, b) => b.games - a.games || a.player.name.localeCompare(b.player.name))
     .slice(0, 5);
+  const rivalComparisons = players
+    .filter((rival) => rival.id !== id)
+    .map((rival) => {
+      const meetings = gamesByDate.flatMap((game) => {
+        const sides = [game.teamA, game.teamB];
+        const playerTeamIndex = sides.findIndex((team) => team.players.some((gamePlayer) => gamePlayer.playerId === id));
+        if (playerTeamIndex === -1) return [];
+
+        const playerTeam = sides[playerTeamIndex];
+        const rivalTeam = sides[playerTeamIndex === 0 ? 1 : 0];
+        const rivalGamePlayer = rivalTeam.players.find((gamePlayer) => gamePlayer.playerId === rival.id);
+        if (!rivalGamePlayer) return [];
+
+        const playerGamePlayer = playerTeam.players.find((gamePlayer) => gamePlayer.playerId === id)!;
+        const result: "win" | "draw" | "loss" = playerTeam.score > rivalTeam.score
+          ? "win"
+          : playerTeam.score < rivalTeam.score ? "loss" : "draw";
+
+        return [{
+          gameId: game.id,
+          date: game.date,
+          result,
+          playerTeamLabel: teamColors[playerTeam.color].label,
+          playerTeamHex: teamColors[playerTeam.color].hex,
+          rivalTeamLabel: teamColors[rivalTeam.color].label,
+          rivalTeamHex: teamColors[rivalTeam.color].hex,
+          scoreFor: playerTeam.score,
+          scoreAgainst: rivalTeam.score,
+          playerGoals: playerGamePlayer.goals,
+          rivalGoals: rivalGamePlayer.goals,
+        }];
+      });
+      const playerWins = meetings.filter((meeting) => meeting.result === "win").length;
+      const draws = meetings.filter((meeting) => meeting.result === "draw").length;
+      const rivalWins = meetings.filter((meeting) => meeting.result === "loss").length;
+      const playerGoals = meetings.reduce((total, meeting) => total + meeting.playerGoals, 0);
+      const rivalGoals = meetings.reduce((total, meeting) => total + meeting.rivalGoals, 0);
+
+      return {
+        player: rival,
+        recentMeetings: meetings.slice(0, 3),
+        summary: {
+          games: meetings.length,
+          playerWins,
+          draws,
+          rivalWins,
+          playerGoals,
+          rivalGoals,
+          goalDifference: playerGoals - rivalGoals,
+        },
+      };
+    });
 
   let longestWinStreak = 0;
   let currentWinStreak = 0;
@@ -340,6 +470,7 @@ export async function getPlayerProfile(id: string) {
   })))];
   const bestScoringGame = [...appearances].sort((a, b) => b.goals - a.goals || +new Date(b.game.date) - +new Date(a.game.date))[0];
   const currentSeason = seasons.find((season) => season.id === currentSeasonId);
+  const captaincies = captainciesForPlayer(calculateCaptaincies(games, players), id);
 
   return {
     player,
@@ -348,13 +479,164 @@ export async function getPlayerProfile(id: string) {
     appearances,
     bestFriends,
     biggestRivals,
+    rivalComparisons,
     seasons,
     honors,
     currentSeason,
+    captaincies,
     favoriteColor,
     bestScoringGame,
     longestWinStreak,
     winRate: standing.games ? (standing.wins / standing.games) * 100 : 0,
     goalsPerGame: standing.games ? standing.goalsScored / standing.games : 0,
+  };
+}
+
+export async function getTeamProfile(id: string) {
+  if (!(id in teamColors)) return undefined;
+
+  const color = id as keyof typeof teamColors;
+  const [games, players, allSeasons] = await Promise.all([getGames(), getPlayers(), getSeasons()]);
+  const identity = { color, ...teamColors[color] };
+  const emptyStanding = {
+    ...identity,
+    points: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDifference: 0,
+    games: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+  };
+  const standing = getTeamStandings(games).find((row) => row.color === color) ?? emptyStanding;
+  const statisticsStandings = getTeamStandings(games, statisticsPointsRule);
+  const statisticsIndex = statisticsStandings.findIndex((row) => row.color === color);
+  const statisticsPosition = statisticsIndex === -1 ? undefined : statisticsIndex + 1;
+  const playerMap = new Map(players.map((player) => [player.id, player]));
+  const appearances = [...games]
+    .sort((a, b) => +new Date(b.date) - +new Date(a.date))
+    .flatMap((game) => {
+      const sides = [
+        { team: game.teamA, opponent: game.teamB },
+        { team: game.teamB, opponent: game.teamA },
+      ];
+      const side = sides.find(({ team }) => team.color === color);
+      if (!side) return [];
+      const result: "win" | "draw" | "loss" = side.team.score > side.opponent.score
+        ? "win"
+        : side.team.score < side.opponent.score ? "loss" : "draw";
+      return [{
+        game,
+        scoreFor: side.team.score,
+        scoreAgainst: side.opponent.score,
+        opponentColor: side.opponent.color,
+        opponentLabel: teamColors[side.opponent.color].label,
+        opponentHex: teamColors[side.opponent.color].hex,
+        players: side.team.players.flatMap((gamePlayer) => {
+          const player = playerMap.get(gamePlayer.playerId);
+          return player ? [{ player, goals: gamePlayer.goals }] : [];
+        }),
+        result,
+      }];
+    });
+
+  let longestWinStreak = 0;
+  let currentWinStreak = 0;
+  [...appearances].reverse().forEach(({ result }) => {
+    currentWinStreak = result === "win" ? currentWinStreak + 1 : 0;
+    longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
+  });
+
+  const playerRecords = new Map<string, { games: number; wins: number; goals: number }>();
+  appearances.forEach((appearance) => appearance.players.forEach(({ player, goals }) => {
+    const record = playerRecords.get(player.id) ?? { games: 0, wins: 0, goals: 0 };
+    record.games += 1;
+    record.wins += Number(appearance.result === "win");
+    record.goals += goals;
+    playerRecords.set(player.id, record);
+  }));
+  const playerStatistics = players
+    .flatMap((player) => {
+      const record = playerRecords.get(player.id);
+      return record ? [{ player, ...record }] : [];
+    });
+  const mostFrequentPlayers = [...playerStatistics]
+    .sort((a, b) => b.games - a.games || b.wins - a.wins || b.goals - a.goals || a.player.name.localeCompare(b.player.name))
+    .slice(0, 5);
+  const topScorers = [...playerStatistics]
+    .filter(({ goals }) => goals > 0)
+    .sort((a, b) => b.goals - a.goals || b.games - a.games || a.player.name.localeCompare(b.player.name))
+    .slice(0, 5);
+
+  const rivalRecords = new Map<keyof typeof teamColors, { games: number; wins: number; draws: number; losses: number; goalsFor: number; goalsAgainst: number; lastMeeting: string }>();
+  appearances.forEach(({ game, opponentColor, result, scoreFor, scoreAgainst }) => {
+    const record = rivalRecords.get(opponentColor) ?? { games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, lastMeeting: game.date };
+    record.games += 1;
+    record.wins += Number(result === "win");
+    record.draws += Number(result === "draw");
+    record.losses += Number(result === "loss");
+    record.goalsFor += scoreFor;
+    record.goalsAgainst += scoreAgainst;
+    rivalRecords.set(opponentColor, record);
+  });
+  const rivals = [...rivalRecords.entries()]
+    .map(([rivalColor, record]) => ({
+      color: rivalColor,
+      ...teamColors[rivalColor],
+      ...record,
+      goalDifference: record.goalsFor - record.goalsAgainst,
+      winRate: record.games ? (record.wins / record.games) * 100 : 0,
+    }))
+    .sort((a, b) => b.games - a.games || b.wins - a.wins || b.goalDifference - a.goalDifference || a.label.localeCompare(b.label));
+
+  const seasons = allSeasons.flatMap((season) => {
+    const row = season.teamStandings.find((candidate) => candidate.color === color);
+    if (!row) return [];
+    const position = season.teamStandings.findIndex((candidate) => candidate.color === color) + 1;
+    return [{ ...row, id: season.id, label: season.label, position, champion: position === 1 }];
+  });
+  const currentSeasonId = allSeasons[0]?.id;
+  const currentSeason = seasons.find((season) => season.id === currentSeasonId);
+  const statisticsHonor = statisticsPosition && statisticsPosition <= 3 ? [{
+    seasonId: "general",
+    seasonLabel: "Geral",
+    title: statisticsPosition === 1 ? "Ouro das Estatísticas" : statisticsPosition === 2 ? "Prata das Estatísticas" : "Bronze das Estatísticas",
+    href: "/estatisticas",
+    ongoing: false,
+  }] : [];
+  const honors = [...statisticsHonor, ...seasons.flatMap((season) => season.champion ? [{
+    seasonId: season.id,
+    seasonLabel: season.label,
+    title: "Time campeão",
+    href: `/temporadas/${season.id}`,
+    ongoing: season.id === currentSeasonId,
+  }] : [])];
+  const captaincies = calculateCaptaincies(games, players)
+    .filter((captaincy) => captaincy.teamColor === color)
+    .map((captaincy) => ({ ...captaincy, player: playerMap.get(captaincy.playerId)! }))
+    .filter((captaincy) => Boolean(captaincy.player));
+  const bestGame = [...appearances].sort((a, b) =>
+    (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst)
+    || b.scoreFor - a.scoreFor
+    || +new Date(b.game.date) - +new Date(a.game.date),
+  )[0];
+
+  return {
+    team: identity,
+    standing,
+    statisticsPosition,
+    appearances,
+    seasons,
+    honors,
+    currentSeason,
+    captaincies,
+    mostFrequentPlayers,
+    topScorers,
+    rivals,
+    bestGame,
+    longestWinStreak,
+    winRate: standing.games ? (standing.wins / standing.games) * 100 : 0,
+    goalsPerGame: standing.games ? standing.goalsFor / standing.games : 0,
   };
 }

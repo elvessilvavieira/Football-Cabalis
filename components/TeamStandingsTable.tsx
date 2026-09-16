@@ -1,6 +1,7 @@
 "use client";
 
 import { Medal } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { TeamStanding } from "@/lib/data";
 import { SortableHeader, type SortDirection } from "./SortableHeader";
@@ -54,7 +55,7 @@ export function TeamStandingsTable({ standings }: { standings: TeamStanding[] })
               return (
               <tr key={row.color}>
                 <td><span className={`position position-${position}`}>{position <= 3 ? <Medal size={16} /> : position}</span></td>
-                <td><div className="team-standing-cell"><span className="team-standing-swatch" style={{ backgroundColor: row.hex }} /><strong>Time {row.label}</strong></div></td>
+                <td><Link className="team-standing-cell team-link" href={`/time/${row.color}`}><span className="team-standing-swatch" style={{ backgroundColor: row.hex }} /><strong>Time {row.label}</strong></Link></td>
                 <td>{row.games}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td>
                 <td><span className={`points ${row.points > 0 ? "positive" : row.points < 0 ? "negative" : ""}`}>{row.points}</span></td>
                 <td>{row.goalsFor}</td><td>{row.goalsAgainst}</td><td>{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</td>
