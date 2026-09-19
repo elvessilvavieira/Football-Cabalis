@@ -11,6 +11,7 @@ create table if not exists games (
   date timestamptz not null,
   venue text,
   access text not null default 'admin' check (access in ('admin', 'editor')),
+  archived_at timestamptz,
   team_a jsonb not null,
   team_b jsonb not null
 );
@@ -19,3 +20,7 @@ create table if not exists games (
 alter table games
   add column if not exists access text not null default 'admin'
   check (access in ('admin', 'editor'));
+
+-- Safe to run on databases created before game archiving was introduced.
+alter table games
+  add column if not exists archived_at timestamptz;

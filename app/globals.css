@@ -578,6 +578,8 @@ footer p { font-size: 11px; }
 .admin-logout { padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; }
 .admin-section { margin-bottom: 44px; }
 .admin-section h2 { margin: 0 0 16px; font-size: 20px; }
+.admin-section h2 small { margin-left: 5px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.admin-section-description { margin: -9px 0 16px; color: var(--muted); font-size: 12px; }
 .admin-game-form, .admin-player-form { padding: 24px; display: grid; gap: 18px; background: white; border: 1px solid var(--line); border-radius: 16px; }
 .admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .admin-form-row label, .admin-game-form > label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
@@ -623,14 +625,16 @@ footer p { font-size: 11px; }
 .admin-matchup { display: flex; align-items: center; gap: 7px; }
 .admin-game-item { min-height: 72px; padding: 14px 16px !important; border-radius: 14px !important; box-shadow: 0 5px 18px rgba(20,49,38,.035); transition: border-color .18s, box-shadow .18s, transform .18s; }
 .admin-game-item:hover { border-color: #c5d4cc; box-shadow: 0 10px 28px rgba(20,49,38,.075); transform: translateY(-1px); }
+.admin-game-item.is-archived { background: #f7f7f4; box-shadow: none; opacity: .82; }
 .admin-action-divider { width: 1px; height: 26px; margin-inline: 3px; background: var(--line); }
 .admin-action-button { min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #46564e; background: #f8faf8; border: 1px solid var(--line); border-radius: 9px; font-size: 11px; font-weight: 800; cursor: pointer; transition: background .16s, border-color .16s, color .16s, transform .16s; }
 .admin-action-button:hover { color: var(--green-800); background: #eef7f1; border-color: #bcd2c5; transform: translateY(-1px); }
 .admin-action-button.is-live { color: #b4232e; background: #fff5f5; border-color: #f2d1d4; }
 .admin-action-button.is-live:hover { color: #971b25; background: #ffe9eb; border-color: #e9b6bb; }
-.admin-action-button.is-danger { width: 34px; padding: 0; color: #9e4a50; background: transparent; }
-.admin-action-button.is-danger:hover { color: #bd2833; background: #fff0f1; border-color: #edbec2; }
-.admin-action-delete-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.admin-action-button.is-archive { width: 34px; padding: 0; color: #75664b; background: transparent; }
+.admin-action-button.is-archive:hover { color: #6a552c; background: #fff9eb; border-color: #decda7; }
+.admin-action-button.is-restore { color: var(--green-800); background: #f2faf5; border-color: #b7d7c3; }
+.admin-action-icon-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .admin-access-switch { min-width: 112px; height: 34px; padding: 0 10px 0 8px; display: inline-flex; align-items: center; gap: 6px; color: #4b5b53; background: white; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; font-weight: 800; cursor: pointer; transition: opacity .16s, border-color .16s, background .16s; }
 .admin-access-switch:hover { border-color: #abc5b6; background: #f8fbf9; }
 .admin-access-switch:disabled { cursor: wait; opacity: .6; }

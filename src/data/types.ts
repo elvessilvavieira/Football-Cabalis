@@ -34,6 +34,7 @@ export type Game = {
   date: string;
   venue?: string;
   access: GameAccess;
+  archivedAt?: string;
   teamA: GameTeam;
   teamB: GameTeam;
 };

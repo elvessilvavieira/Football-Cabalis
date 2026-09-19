@@ -5,7 +5,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { ADMIN_COOKIE_NAME } from "@/lib/auth-token";
-import { deleteGame, deletePlayer, insertGame, updateGame, updateGameAccess, upsertPlayer } from "@/lib/db";
+import { archiveGame, deletePlayer, insertGame, restoreGame, updateGame, updateGameAccess, upsertPlayer } from "@/lib/db";
 import type { Game, GameAccess, GameTeam } from "@/lib/data";
 
 function gameFromFormData(formData: FormData): { id: string; game: Game } {
@@ -51,9 +51,16 @@ export async function startLiveGameAction(formData: FormData) {
   redirect(`/admin/jogos/${game.id}/ao-vivo`);
 }
 
-export async function deleteGameAction(formData: FormData) {
+export async function archiveGameAction(formData: FormData) {
   await requireAdmin();
-  await deleteGame(String(formData.get("id")));
+  await archiveGame(String(formData.get("id")));
+  updateTag("games");
+  redirect("/admin");
+}
+
+export async function restoreGameAction(formData: FormData) {
+  await requireAdmin();
+  await restoreGame(String(formData.get("id")));
   updateTag("games");
   redirect("/admin");
 }

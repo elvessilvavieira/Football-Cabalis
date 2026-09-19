@@ -1,12 +1,12 @@
-import { getGames, getPlayers, teamColors } from "@/lib/data";
+import { getArchivedGames, getGames, getPlayers, teamColors } from "@/lib/data";
 import { requireAdmin } from "@/lib/auth";
 import { GameForm } from "@/components/admin/GameForm";
-import { GameListActions } from "@/components/admin/GameListActions";
+import { ArchivedGameListActions, GameListActions } from "@/components/admin/GameListActions";
 import { deletePlayerAction, logoutAction, savePlayerAction, saveGameAction, startLiveGameAction } from "./actions";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [games, players] = await Promise.all([getGames(), getPlayers()]);
+  const [games, archivedGames, players] = await Promise.all([getGames(), getArchivedGames(), getPlayers()]);
 
   return (
     <main className="container admin-page">
@@ -43,6 +43,33 @@ export default async function AdminPage() {
             </li>
           ))}
           {games.length === 0 && <li className="admin-empty">Ainda não há partidas registadas.</li>}
+        </ul>
+      </section>
+
+      <section className="admin-section admin-archived-section">
+        <h2>Partidas arquivadas <small>{archivedGames.length}</small></h2>
+        <p className="admin-section-description">Não aparecem no site nem contam para temporadas, perfis ou estatísticas.</p>
+        <ul className="admin-list">
+          {archivedGames.map((game) => (
+            <li key={game.id} className="admin-game-item is-archived">
+              <div className="admin-list-game">
+                <span className="admin-list-date">
+                  {new Date(game.date).toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" })}
+                </span>
+                <span className="admin-matchup">
+                  <span className="admin-score-chip" style={{ color: teamColors[game.teamA.color].hex }}>
+                    {teamColors[game.teamA.color].label} <b>{game.teamA.score}</b>
+                  </span>
+                  <span className="admin-score-sep">—</span>
+                  <span className="admin-score-chip" style={{ color: teamColors[game.teamB.color].hex }}>
+                    <b>{game.teamB.score}</b> {teamColors[game.teamB.color].label}
+                  </span>
+                </span>
+              </div>
+              <ArchivedGameListActions gameId={game.id} />
+            </li>
+          ))}
+          {archivedGames.length === 0 && <li className="admin-empty">Não há partidas arquivadas.</li>}
         </ul>
       </section>
 
