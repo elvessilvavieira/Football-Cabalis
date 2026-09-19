@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { Pencil, Radio, ShieldCheck, Trash2 } from "lucide-react";
-import { deleteGameAction, updateGameAccessAction } from "@/app/admin/actions";
+import { Archive, ArchiveRestore, Pencil, Radio, ShieldCheck } from "lucide-react";
+import { archiveGameAction, restoreGameAction, updateGameAccessAction } from "@/app/admin/actions";
 import type { GameAccess } from "@/lib/data";
 
 export function GameListActions({ gameId, access }: { gameId: string; access: GameAccess }) {
@@ -51,16 +51,27 @@ export function GameListActions({ gameId, access }: { gameId: string; access: Ga
         <Pencil size={15} /> <span>Editar</span>
       </Link>
       <form
-        action={deleteGameAction}
+        action={archiveGameAction}
         onSubmit={(event) => {
-          if (!window.confirm("Eliminar este jogo permanentemente?")) event.preventDefault();
+          if (!window.confirm("Arquivar esta partida? Ela deixará de aparecer no site e não contará nas estatísticas.")) event.preventDefault();
         }}
       >
         <input type="hidden" name="id" value={gameId} />
-        <button className="admin-action-button is-danger" type="submit" title="Eliminar jogo">
-          <Trash2 size={15} /> <span className="admin-action-delete-label">Eliminar</span>
+        <button className="admin-action-button is-archive" type="submit" title="Arquivar partida">
+          <Archive size={15} /> <span className="admin-action-icon-label">Arquivar</span>
         </button>
       </form>
     </div>
+  );
+}
+
+export function ArchivedGameListActions({ gameId }: { gameId: string }) {
+  return (
+    <form action={restoreGameAction}>
+      <input type="hidden" name="id" value={gameId} />
+      <button className="admin-action-button is-restore" type="submit" title="Desarquivar partida">
+        <ArchiveRestore size={15} /> <span>Desarquivar</span>
+      </button>
+    </form>
   );
 }
