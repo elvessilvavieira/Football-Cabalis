@@ -11,7 +11,15 @@ function getClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-type GameRow = { id: string; date: string; venue: string | null; access?: GameAccess | null; team_a: GameTeam; team_b: GameTeam };
+type GameRow = {
+  id: string;
+  date: string;
+  venue: string | null;
+  access?: GameAccess | null;
+  archived_at?: string | null;
+  team_a: GameTeam;
+  team_b: GameTeam;
+};
 type PlayerRow = { id: string; name: string; photo: string | null };
 
 function rowToGame(row: GameRow): Game {
@@ -20,6 +28,7 @@ function rowToGame(row: GameRow): Game {
     date: row.date,
     venue: row.venue ?? undefined,
     access: row.access === "editor" ? "editor" : "admin",
+    archivedAt: row.archived_at ?? undefined,
     teamA: row.team_a,
     teamB: row.team_b,
   };
@@ -33,9 +42,19 @@ export const getGames = unstable_cache(
   async (): Promise<Game[]> => {
     const { data, error } = await getClient().from("games").select("*").order("date", { ascending: false });
     if (error) throw new Error(`Failed to fetch games: ${error.message}`);
-    return (data as GameRow[]).map(rowToGame);
+    return (data as GameRow[]).filter((row) => !row.archived_at).map(rowToGame);
   },
   ["games"],
+  { tags: ["games"] },
+);
+
+export const getArchivedGames = unstable_cache(
+  async (): Promise<Game[]> => {
+    const { data, error } = await getClient().from("games").select("*").order("date", { ascending: false });
+    if (error) throw new Error(`Failed to fetch archived games: ${error.message}`);
+    return (data as GameRow[]).filter((row) => Boolean(row.archived_at)).map(rowToGame);
+  },
+  ["archived-games"],
   { tags: ["games"] },
 );
 
@@ -52,7 +71,8 @@ export const getPlayers = unstable_cache(
 export async function getGameById(id: string): Promise<Game | undefined> {
   const { data, error } = await getClient().from("games").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(`Failed to fetch game: ${error.message}`);
-  return data ? rowToGame(data as GameRow) : undefined;
+  if (!data || (data as GameRow).archived_at) return undefined;
+  return rowToGame(data as GameRow);
 }
 
 export async function insertGame(game: Game) {
@@ -122,9 +142,15 @@ export async function assignPlayerToTeam(gameId: string, playerId: string, team:
   return rowToGame({ ...row, team_a: teamA, team_b: teamB });
 }
 
-export async function deleteGame(id: string) {
-  const { error } = await getClient().from("games").delete().eq("id", id);
-  if (error) throw new Error(`Failed to delete game: ${error.message}`);
+export async function archiveGame(id: string) {
+  const { error } = await getClient().from("games").update({ archived_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw new Error(`Failed to archive game: ${error.message}`);
+  revalidateTag("games", "max");
+}
+
+export async function restoreGame(id: string) {
+  const { error } = await getClient().from("games").update({ archived_at: null }).eq("id", id);
+  if (error) throw new Error(`Failed to restore game: ${error.message}`);
   revalidateTag("games", "max");
 }
 
